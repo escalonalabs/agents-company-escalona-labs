@@ -23,15 +23,9 @@ DEFAULT_LABELS = [
     "question",
     "wontfix",
 ]
-REQUIRED_STATUS_CHECKS = [
-    "repo-guardrails",
-    "dependency-review",
-    "secret-scan",
-    "replay-regression",
-    "ci",
-]
-RELEASE_REQUIRED_STATUS_CHECKS = [
+PRODUCTION_REQUIRED_STATUS_CHECKS = [
     "quality",
+    "ops-validation",
     "bootstrap-smoke",
     "integration-smokes",
     "self-hosted-smoke",
@@ -40,6 +34,9 @@ RELEASE_REQUIRED_STATUS_CHECKS = [
     "secret-scan",
     "replay-regression",
 ]
+MAIN_REQUIRED_STATUS_CHECKS = list(PRODUCTION_REQUIRED_STATUS_CHECKS)
+RELEASE_REQUIRED_STATUS_CHECKS = list(PRODUCTION_REQUIRED_STATUS_CHECKS)
+MAIN_RULESET_NAME = "Main Branch Protection"
 RELEASE_RULESET_NAME = "Release Candidate Protection"
 
 
@@ -352,36 +349,94 @@ def sync_issues(
         ensure_issue(repo, issue, milestone_numbers, existing, sync_issue_labels)
 
 
-def protect_main(repo: str) -> None:
-    payload = {
-        "required_status_checks": {"strict": True, "contexts": REQUIRED_STATUS_CHECKS},
-        "enforce_admins": True,
-        "required_pull_request_reviews": {
-            "dismiss_stale_reviews": False,
-            "require_code_owner_reviews": True,
-            "required_approving_review_count": 1,
-        },
-        "restrictions": None,
-        "required_conversation_resolution": True,
-        "allow_force_pushes": False,
-        "allow_deletions": False,
-        "block_creations": False,
-        "lock_branch": False,
-        "allow_fork_syncing": True,
-    }
+def delete_branch_protection_if_present(repo: str, branch: str) -> None:
     try:
-        gh_api_json("PUT", f"repos/{repo}/branches/main/protection", payload)
+        gh_api_json("DELETE", f"repos/{repo}/branches/{branch}/protection")
     except RuntimeError as exc:
-        if "Upgrade to GitHub Pro or make this repository public" in str(exc):
-            raise RuntimeError(
-                "Branch protection is unavailable for this private repository on the current GitHub plan. "
-                "Make the repository public or upgrade the plan before rerunning with --protect-main."
-            ) from exc
+        message = str(exc).lower()
+        if "branch not protected" in message or "http 404" in message or "not found" in message:
+            return
         raise
 
 
+def build_pull_request_rule() -> dict[str, Any]:
+    return {
+        "type": "pull_request",
+        "parameters": {
+            "dismiss_stale_reviews_on_push": True,
+            "require_code_owner_review": True,
+            "require_last_push_approval": False,
+            "required_approving_review_count": 1,
+            "required_review_thread_resolution": True,
+        },
+    }
+
+
+def build_branch_ruleset_payload(
+    *,
+    name: str,
+    include_refs: list[str],
+    required_status_checks: list[str],
+) -> dict[str, Any]:
+    return {
+        "name": name,
+        "target": "branch",
+        "enforcement": "active",
+        "conditions": {
+            "ref_name": {
+                "include": include_refs,
+                "exclude": [],
+            }
+        },
+        "bypass_actors": [],
+        "rules": [
+            {"type": "deletion"},
+            {"type": "non_fast_forward"},
+            build_pull_request_rule(),
+            build_required_status_checks(required_status_checks),
+        ],
+    }
+
+
+def upsert_ruleset(repo: str, name: str, payload: dict[str, Any]) -> None:
+    existing = find_ruleset_by_name(repo, name)
+    if existing is None:
+        gh_api_json("POST", f"repos/{repo}/rulesets", payload)
+        return
+    gh_api_json("PUT", f"repos/{repo}/rulesets/{existing['id']}", payload)
+
+
+def delete_ruleset_by_name(repo: str, name: str) -> None:
+    existing = find_ruleset_by_name(repo, name)
+    if existing is None:
+        return
+    gh_api_json("DELETE", f"repos/{repo}/rulesets/{existing['id']}")
+
+
+def build_main_ruleset_payload() -> dict[str, Any]:
+    return build_branch_ruleset_payload(
+        name=MAIN_RULESET_NAME,
+        include_refs=["refs/heads/main"],
+        required_status_checks=MAIN_REQUIRED_STATUS_CHECKS,
+    )
+
+
+def protect_main(repo: str) -> None:
+    try:
+        upsert_ruleset(repo, MAIN_RULESET_NAME, build_main_ruleset_payload())
+    except RuntimeError as exc:
+        if "Upgrade to GitHub Pro or make this repository public" in str(exc):
+            raise RuntimeError(
+                "Repository rulesets are unavailable for this repository on the current GitHub plan. "
+                "Make the repository public or upgrade the plan before rerunning with --protect-main."
+            ) from exc
+        raise
+    delete_branch_protection_if_present(repo, "main")
+
+
 def unprotect_main(repo: str) -> None:
-    gh_api_json("DELETE", f"repos/{repo}/branches/main/protection")
+    delete_ruleset_by_name(repo, MAIN_RULESET_NAME)
+    delete_branch_protection_if_present(repo, "main")
 
 
 def list_rulesets(repo: str) -> list[dict[str, Any]]:
@@ -406,51 +461,19 @@ def build_required_status_checks(contexts: list[str]) -> dict[str, Any]:
 
 
 def build_release_ruleset_payload() -> dict[str, Any]:
-    return {
-        "name": RELEASE_RULESET_NAME,
-        "target": "branch",
-        "enforcement": "active",
-        "conditions": {
-            "ref_name": {
-                "include": ["refs/heads/release/*"],
-                "exclude": [],
-            }
-        },
-        "bypass_actors": [],
-        "rules": [
-            {"type": "deletion"},
-            {"type": "non_fast_forward"},
-            {
-                "type": "pull_request",
-                "parameters": {
-                    "dismiss_stale_reviews_on_push": True,
-                    "require_code_owner_review": True,
-                    "require_last_push_approval": False,
-                    "required_approving_review_count": 1,
-                    "required_review_thread_resolution": True,
-                },
-            },
-            build_required_status_checks(RELEASE_REQUIRED_STATUS_CHECKS),
-        ],
-    }
+    return build_branch_ruleset_payload(
+        name=RELEASE_RULESET_NAME,
+        include_refs=["refs/heads/release/*"],
+        required_status_checks=RELEASE_REQUIRED_STATUS_CHECKS,
+    )
 
 
 def protect_release(repo: str) -> None:
-    payload = build_release_ruleset_payload()
-    existing = find_ruleset_by_name(repo, RELEASE_RULESET_NAME)
-
-    if existing is None:
-        gh_api_json("POST", f"repos/{repo}/rulesets", payload)
-        return
-
-    gh_api_json("PUT", f"repos/{repo}/rulesets/{existing['id']}", payload)
+    upsert_ruleset(repo, RELEASE_RULESET_NAME, build_release_ruleset_payload())
 
 
 def unprotect_release(repo: str) -> None:
-    existing = find_ruleset_by_name(repo, RELEASE_RULESET_NAME)
-    if existing is None:
-        return
-    gh_api_json("DELETE", f"repos/{repo}/rulesets/{existing['id']}")
+    delete_ruleset_by_name(repo, RELEASE_RULESET_NAME)
 
 
 def main() -> int:
@@ -465,8 +488,16 @@ def main() -> int:
         action="store_true",
         help="When syncing existing issues, also reset their labels to the seeded set",
     )
-    parser.add_argument("--protect-main", action="store_true", help="Apply branch protection on main")
-    parser.add_argument("--unprotect-main", action="store_true", help="Remove branch protection from main")
+    parser.add_argument(
+        "--protect-main",
+        action="store_true",
+        help="Apply a repository ruleset that protects main and cleans up legacy branch protection",
+    )
+    parser.add_argument(
+        "--unprotect-main",
+        action="store_true",
+        help="Remove the main ruleset and any legacy branch protection on main",
+    )
     parser.add_argument(
         "--protect-release",
         action="store_true",
@@ -495,9 +526,11 @@ def main() -> int:
         if "delete_default_labels" in operations:
             print("- default labels: delete requested")
         if "protect_main" in operations:
-            print(f"- branch protection: require {', '.join(REQUIRED_STATUS_CHECKS)}")
+            print(
+                f"- main ruleset: require PR + reviews + {', '.join(MAIN_REQUIRED_STATUS_CHECKS)} on main"
+            )
         if "unprotect_main" in operations:
-            print("- branch protection: remove from main")
+            print("- main ruleset: remove from main and clear any legacy branch protection")
         if "protect_release" in operations:
             print(
                 f"- release ruleset: require PR + reviews + {', '.join(RELEASE_REQUIRED_STATUS_CHECKS)} on release/*"

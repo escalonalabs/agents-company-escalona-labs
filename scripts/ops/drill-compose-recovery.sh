@@ -69,7 +69,7 @@ compose_port_url() {
   )"
   [[ -n "$mapping" ]] || fail "could not resolve published port for service '$service:$container_port'."
 
-  printf 'http://%s%s\n' "${mapping#0.0.0.0:}" "$path"
+  printf 'http://127.0.0.1:%s%s\n' "${mapping##*:}" "$path"
 }
 
 assert_stack_running() {
