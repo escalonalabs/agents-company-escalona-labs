@@ -1,8 +1,9 @@
 import { fileURLToPath } from 'node:url';
 
-import { closePool, getPool } from './pool';
+import { closePool, getPool, waitForDatabaseReady } from './pool';
 
 export async function migrate() {
+  await waitForDatabaseReady();
   const pool = getPool();
 
   await pool.query(`

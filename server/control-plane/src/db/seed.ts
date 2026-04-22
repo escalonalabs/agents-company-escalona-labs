@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-import { closePool, getPool } from './pool';
+import { closePool, getPool, waitForDatabaseReady } from './pool';
 
 export async function seed() {
+  await waitForDatabaseReady();
   const pool = getPool();
   const companyId = `company_${randomUUID()}`;
 
