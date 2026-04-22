@@ -27,6 +27,7 @@ REQUIRED_STATUS_CHECKS = [
     "repo-guardrails",
     "dependency-review",
     "secret-scan",
+    "replay-regression",
 ]
 
 

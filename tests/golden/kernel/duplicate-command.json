@@ -1,0 +1,40 @@
+{
+  "trace_id": "kernel/duplicate-command/v1",
+  "schema_version": 1,
+  "scenario_name": "duplicate_command",
+  "seed_state": {
+    "objective_id": "obj_duplicate_001",
+    "objective_status": "planned"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_duplicate_001",
+      "type": "objective.accepted",
+      "issued_at": "2026-04-22T00:30:00Z"
+    },
+    {
+      "command_id": "cmd_duplicate_001",
+      "type": "objective.accepted",
+      "issued_at": "2026-04-22T00:30:01Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_duplicate_001",
+      "type": "objective.created",
+      "occurred_at": "2026-04-22T00:30:00Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "objective_status": "ready",
+    "duplicate_commands_suppressed": 1
+  },
+  "expected_projection_state": {
+    "active_runs": 0,
+    "dedupe_hits": 1
+  },
+  "expected_invariants": [
+    "idempotency_key_suppresses_duplicate_transition",
+    "no_duplicate_event_emission"
+  ]
+}

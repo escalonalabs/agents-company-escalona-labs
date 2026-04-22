@@ -1,0 +1,52 @@
+{
+  "trace_id": "kernel/approval-gate/v1",
+  "schema_version": 1,
+  "scenario_name": "approval_gate",
+  "seed_state": {
+    "objective_id": "obj_approval_001",
+    "objective_status": "planned"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_approval_001",
+      "type": "work_item.dispatch",
+      "issued_at": "2026-04-22T00:10:00Z"
+    },
+    {
+      "command_id": "cmd_approval_002",
+      "type": "approval.grant",
+      "issued_at": "2026-04-22T00:12:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_approval_001",
+      "type": "approval.requested",
+      "occurred_at": "2026-04-22T00:10:05Z"
+    },
+    {
+      "event_id": "evt_approval_002",
+      "type": "approval.granted",
+      "occurred_at": "2026-04-22T00:12:00Z"
+    },
+    {
+      "event_id": "evt_approval_003",
+      "type": "run.completed.valid_success",
+      "occurred_at": "2026-04-22T00:13:15Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "approval_status": "granted",
+    "work_item_status": "completed",
+    "run_status": "valid_success"
+  },
+  "expected_projection_state": {
+    "pending_approvals": 0,
+    "latest_operator_action": "grant",
+    "active_runs": 0
+  },
+  "expected_invariants": [
+    "no_execution_before_approval",
+    "approval_history_is_auditable"
+  ]
+}

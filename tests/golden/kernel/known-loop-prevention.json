@@ -1,0 +1,41 @@
+{
+  "trace_id": "kernel/known-loop-prevention/v1",
+  "schema_version": 1,
+  "scenario_name": "known_loop_prevention",
+  "seed_state": {
+    "objective_id": "obj_loop_001",
+    "objective_status": "in_progress"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_loop_001",
+      "type": "work_item.redispatch_attempt",
+      "issued_at": "2026-04-22T01:20:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_loop_001",
+      "type": "run.awaiting_verification",
+      "occurred_at": "2026-04-22T01:20:00Z"
+    },
+    {
+      "event_id": "evt_loop_002",
+      "type": "work_item.escalated.no_new_causal_input",
+      "occurred_at": "2026-04-22T01:20:05Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "work_item_status": "escalated",
+    "run_status": "awaiting_verification",
+    "redispatch_count": 0
+  },
+  "expected_projection_state": {
+    "active_runs": 0,
+    "operator_attention_required": true
+  },
+  "expected_invariants": [
+    "no_redispatch_without_new_causal_input",
+    "terminal_blocked_or_escalated"
+  ]
+}

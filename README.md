@@ -20,6 +20,7 @@ Agents Company is a clean-room rebuild for a GitHub-first company-of-agents plat
 
 - `docs/roadmap/` for delivery plans
 - `docs/adr/` for architectural decisions
+- `docs/alpha-readiness/` for launch gates, runbooks, and replay readiness
 - `docs/backlog/` for backlog mirrors and operating system notes
 - `docs/brand/` for naming and visual guidance
 - `docs/operations/` for contributor and delivery rules
@@ -31,6 +32,7 @@ Run the repository guardrails locally:
 
 ```bash
 pnpm check:repo
+pnpm check:replay
 ```
 
 ## Security

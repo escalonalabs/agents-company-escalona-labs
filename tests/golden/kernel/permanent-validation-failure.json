@@ -1,0 +1,41 @@
+{
+  "trace_id": "kernel/permanent-validation-failure/v1",
+  "schema_version": 1,
+  "scenario_name": "permanent_validation_failure",
+  "seed_state": {
+    "objective_id": "obj_invalid_001",
+    "objective_status": "ready"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_invalid_001",
+      "type": "work_item.dispatch",
+      "issued_at": "2026-04-22T00:50:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_invalid_001",
+      "type": "task_result.invalid_output",
+      "occurred_at": "2026-04-22T00:50:20Z"
+    },
+    {
+      "event_id": "evt_invalid_002",
+      "type": "work_item.blocked",
+      "occurred_at": "2026-04-22T00:50:21Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "work_item_status": "blocked",
+    "run_status": "invalid_output",
+    "retry_count": 0
+  },
+  "expected_projection_state": {
+    "active_runs": 0,
+    "block_reason": "invalid_output"
+  },
+  "expected_invariants": [
+    "invalid_output_never_triggers_downstream_work",
+    "no_automatic_retry_after_schema_failure"
+  ]
+}

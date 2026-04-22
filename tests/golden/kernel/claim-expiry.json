@@ -1,0 +1,46 @@
+{
+  "trace_id": "kernel/claim-expiry/v1",
+  "schema_version": 1,
+  "scenario_name": "claim_expiry",
+  "seed_state": {
+    "objective_id": "obj_claim_001",
+    "objective_status": "ready"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_claim_001",
+      "type": "work_item.dispatch",
+      "issued_at": "2026-04-22T01:00:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_claim_001",
+      "type": "lease.acquired",
+      "occurred_at": "2026-04-22T01:00:01Z"
+    },
+    {
+      "event_id": "evt_claim_002",
+      "type": "lease.expired",
+      "occurred_at": "2026-04-22T01:05:01Z"
+    },
+    {
+      "event_id": "evt_claim_003",
+      "type": "work_item.requeued",
+      "occurred_at": "2026-04-22T01:05:02Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "lease_status": "expired",
+    "work_item_status": "ready",
+    "run_status": "cancelled"
+  },
+  "expected_projection_state": {
+    "active_runs": 0,
+    "queue_state": "requeued"
+  },
+  "expected_invariants": [
+    "expired_lease_cannot_continue",
+    "redispatch_requires_new_lease"
+  ]
+}

@@ -74,6 +74,7 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 - Observability model defined
 - Replay regression enforced in CI
 - Security review closed
+- Reference workflows defined for launch gating
 - Release and rollback runbook ready
 
 ## Build order
@@ -84,4 +85,3 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 4. Orchestration and execution controls
 5. Memory and operator UX
 6. Alpha readiness and release discipline
-

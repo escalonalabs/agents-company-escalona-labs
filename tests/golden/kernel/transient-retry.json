@@ -1,0 +1,46 @@
+{
+  "trace_id": "kernel/transient-retry/v1",
+  "schema_version": 1,
+  "scenario_name": "transient_retry",
+  "seed_state": {
+    "objective_id": "obj_retry_001",
+    "objective_status": "ready"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_retry_001",
+      "type": "work_item.dispatch",
+      "issued_at": "2026-04-22T00:40:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_retry_001",
+      "type": "run.failed.transient",
+      "occurred_at": "2026-04-22T00:40:30Z"
+    },
+    {
+      "event_id": "evt_retry_002",
+      "type": "run.retry_scheduled",
+      "occurred_at": "2026-04-22T00:40:31Z"
+    },
+    {
+      "event_id": "evt_retry_003",
+      "type": "run.completed.valid_success",
+      "occurred_at": "2026-04-22T00:41:15Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "work_item_status": "completed",
+    "retry_count": 1,
+    "run_status": "valid_success"
+  },
+  "expected_projection_state": {
+    "active_runs": 0,
+    "last_retry_reason": "transient_failure"
+  },
+  "expected_invariants": [
+    "retry_budget_enforced",
+    "retry_keeps_same_work_item_identity"
+  ]
+}

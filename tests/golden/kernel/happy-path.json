@@ -1,0 +1,47 @@
+{
+  "trace_id": "kernel/happy-path/v1",
+  "schema_version": 1,
+  "scenario_name": "happy_path",
+  "seed_state": {
+    "objective_id": "obj_happy_001",
+    "objective_status": "planned"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_happy_001",
+      "type": "objective.accepted",
+      "issued_at": "2026-04-22T00:00:00Z"
+    },
+    {
+      "command_id": "cmd_happy_002",
+      "type": "work_item.dispatch",
+      "issued_at": "2026-04-22T00:00:05Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_happy_001",
+      "type": "objective.created",
+      "occurred_at": "2026-04-22T00:00:00Z"
+    },
+    {
+      "event_id": "evt_happy_002",
+      "type": "run.completed.valid_success",
+      "occurred_at": "2026-04-22T00:01:00Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "objective_status": "completed",
+    "work_item_status": "completed",
+    "run_status": "valid_success"
+  },
+  "expected_projection_state": {
+    "github_issue_state": "closed",
+    "pending_approvals": 0,
+    "active_runs": 0
+  },
+  "expected_invariants": [
+    "single_active_lease",
+    "no_downstream_without_valid_success"
+  ]
+}

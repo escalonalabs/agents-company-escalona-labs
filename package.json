@@ -10,6 +10,7 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "check:repo": "python3 .github/scripts/repo_guardrails.py"
+    "check:repo": "python3 .github/scripts/repo_guardrails.py",
+    "check:replay": "python3 .github/scripts/check_replay_regression.py"
   }
 }
