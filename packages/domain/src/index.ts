@@ -5,6 +5,17 @@ export type CompanyRole =
   | 'reviewer'
   | 'viewer';
 export type CompanyStatus = 'active' | 'disabled';
+export type CompanyBetaPhase = 'internal_alpha' | 'controlled_beta';
+export type CompanyBetaEnrollmentStatus =
+  | 'invited'
+  | 'active'
+  | 'suspended'
+  | 'graduated';
+export type CompanyInvitationStatus =
+  | 'pending'
+  | 'accepted'
+  | 'revoked'
+  | 'expired';
 export type ObjectiveStatus =
   | 'draft'
   | 'planned'
@@ -38,6 +49,7 @@ export type AggregateType =
   | 'claim';
 export type DomainEventType =
   | 'company.created'
+  | 'company.updated'
   | 'objective.created'
   | 'objective.updated'
   | 'work_item.created'
@@ -56,7 +68,55 @@ export interface Company {
   slug: string;
   displayName: string;
   status: CompanyStatus;
+  betaPhase?: CompanyBetaPhase;
+  betaEnrollmentStatus?: CompanyBetaEnrollmentStatus;
+  betaNotes?: string;
+  betaUpdatedAt?: string;
   createdAt: string;
+}
+
+export interface RepositoryTarget {
+  owner: string;
+  name: string;
+  id?: number;
+}
+
+export interface User {
+  userId: string;
+  email: string;
+  displayName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyMembership {
+  companyId: string;
+  userId: string;
+  role: CompanyRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyInvitation {
+  invitationId: string;
+  companyId: string;
+  email: string;
+  role: CompanyRole;
+  status: CompanyInvitationStatus;
+  invitedByUserId?: string;
+  acceptedByUserId?: string;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+  acceptedAt?: string;
+}
+
+export interface AuthSession {
+  sessionId: string;
+  userId: string;
+  expiresAt: string;
+  createdAt: string;
+  lastSeenAt: string;
 }
 
 export interface Objective {
@@ -64,6 +124,7 @@ export interface Objective {
   companyId: string;
   title: string;
   summary?: string;
+  repositoryTarget?: RepositoryTarget;
   status: ObjectiveStatus;
   createdAt: string;
   updatedAt: string;
@@ -75,6 +136,7 @@ export interface WorkItem {
   objectiveId: string;
   title: string;
   description?: string;
+  repositoryTarget?: RepositoryTarget;
   status: WorkItemStatus;
   attemptBudget: number;
   requiresApproval: boolean;
@@ -93,8 +155,10 @@ export interface Run {
   attempt: number;
   status: RunStatus;
   executionPacketId?: string;
+  headSha?: string;
   summary?: string;
   failureClass?: string;
+  availableAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -118,11 +182,141 @@ export interface ArtifactRef {
   contentHash: string;
 }
 
+export type MemorySourceKind =
+  | 'run'
+  | 'approval'
+  | 'github_inbound'
+  | 'artifact'
+  | 'ledger_event';
+export type MemoryCandidateClass =
+  | 'workflow_convention'
+  | 'integration_constraint'
+  | 'operator_preference'
+  | 'failure_signature';
+export type MemoryRetentionClass = 'operational' | 'knowledge' | 'audit';
+export type MemoryCandidateStatus =
+  | 'pending_review'
+  | 'promoted'
+  | 'rejected'
+  | 'quarantined';
+export type MemoryStatus =
+  | 'active'
+  | 'expired'
+  | 'superseded'
+  | 'revoked'
+  | 'quarantined';
+export type MemoryInvalidationReason =
+  | 'expired'
+  | 'superseded'
+  | 'revoked'
+  | 'quarantined';
+export type ProvenanceNodeType =
+  | 'ledger_event'
+  | 'artifact'
+  | 'run'
+  | 'approval'
+  | 'github_inbound'
+  | 'memory_candidate'
+  | 'memory';
+export type ProvenanceEdgeType =
+  | 'derived_from'
+  | 'validated_by'
+  | 'supersedes'
+  | 'invalidates'
+  | 'approved_by';
+export type MemoryFreshness = 'fresh' | 'stale' | 'uncertain';
+export type MemoryRetrievalOutcome = 'returned' | 'withheld';
+
+export interface MemoryCandidate {
+  candidateId: string;
+  companyId: string;
+  sourceKind: MemorySourceKind;
+  sourceRef: string;
+  aggregateType?: string;
+  aggregateId?: string;
+  objectiveId?: string;
+  scopeRef?: string;
+  candidateClass: MemoryCandidateClass;
+  retentionClass: MemoryRetentionClass;
+  summary: string;
+  detail?: string;
+  confidence: number;
+  freshnessExpiresAt?: string;
+  status: MemoryCandidateStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeMemory {
+  memoryId: string;
+  companyId: string;
+  candidateId: string;
+  aggregateType?: string;
+  aggregateId?: string;
+  objectiveId?: string;
+  scopeRef?: string;
+  candidateClass: MemoryCandidateClass;
+  retentionClass: MemoryRetentionClass;
+  summary: string;
+  detail?: string;
+  confidence: number;
+  freshnessExpiresAt?: string;
+  status: MemoryStatus;
+  createdAt: string;
+  updatedAt: string;
+  invalidatedAt?: string;
+  invalidationReason?: MemoryInvalidationReason;
+}
+
+export interface ProvenanceEdge {
+  edgeId: string;
+  companyId: string;
+  sourceNodeType: ProvenanceNodeType;
+  sourceNodeId: string;
+  targetNodeType: ProvenanceNodeType;
+  targetNodeId: string;
+  edgeType: ProvenanceEdgeType;
+  createdAt: string;
+}
+
+export interface MemoryRetrievalAudit {
+  retrievalId: string;
+  companyId: string;
+  memoryId?: string;
+  scopeRef?: string;
+  objectiveId?: string;
+  queryText?: string;
+  freshness: MemoryFreshness;
+  outcome: MemoryRetrievalOutcome;
+  reason?: string;
+  relevanceScore: number;
+  createdAt: string;
+}
+
+export interface MemoryEvaluation {
+  companyId: string;
+  totalCandidates: number;
+  totalMemories: number;
+  activeMemories: number;
+  invalidatedMemories: number;
+  quarantinedMemories: number;
+  retrievalCount: number;
+  returnedRetrievalCount: number;
+  withheldRetrievalCount: number;
+  staleRetrievalRate: number;
+  contaminationRate: number;
+  provenanceCompleteness: number;
+  overrideFrequency: number;
+}
+
 export interface ProjectionHealth {
   companyId: string;
   projectionTarget: 'github' | 'control_plane';
   status: 'healthy' | 'lagging' | 'drifted';
   lastSuccessfulSyncAt?: string;
+  lastAttemptAt?: string;
+  openDriftCount?: number;
+  lastError?: string;
 }
 
 export interface DriftAlert {
@@ -130,8 +324,14 @@ export interface DriftAlert {
   companyId: string;
   aggregateType: string;
   aggregateId: string;
-  severity: 'warning' | 'critical';
+  severity: 'info' | 'warn' | 'high' | 'critical';
   summary: string;
+  githubObjectRef?: string;
+  driftClass?: string;
+  sourceEventId?: string;
+  observedAt?: string;
+  repairStatus?: 'open' | 'repaired' | 'ignored';
+  notes?: string;
 }
 
 export interface GitHubSyncEvent {
@@ -140,7 +340,26 @@ export interface GitHubSyncEvent {
   aggregateType: string;
   aggregateId: string;
   direction: 'outbound' | 'inbound';
-  status: 'accepted' | 'failed' | 'drift_detected';
+  status: 'queued' | 'accepted' | 'failed' | 'drift_detected';
+  actionType?: string;
+  deliveryKey?: string;
+  githubObjectRef?: string;
+  sourceEventId?: string;
+  attemptCount?: number;
+  lastError?: string;
+  appliedAt?: string;
+}
+
+export interface OperatorTimelineEvent {
+  eventId: string;
+  occurredAt: string;
+  aggregateType: string;
+  aggregateId: string;
+  eventType: string;
+  summary: string;
+  severity: 'info' | 'warn' | 'high' | 'critical';
+  actorRef?: string;
+  source: 'ledger' | 'github_inbound' | 'drift';
 }
 
 export interface ClaimLease {

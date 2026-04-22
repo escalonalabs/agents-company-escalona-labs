@@ -1,11 +1,18 @@
 import type {
   ApprovalDecision,
+  ClaimLease,
   Company,
   Objective,
+  RepositoryTarget,
   Run,
   WorkItem,
 } from '@escalonalabs/domain';
-import type { ExecutionPacket } from '@escalonalabs/execution';
+import type {
+  EffectEnvelope,
+  ExecutionPacket,
+  ExecutorResult,
+  ToolKind,
+} from '@escalonalabs/execution';
 
 import type { Queryable } from './events';
 
@@ -14,6 +21,10 @@ export interface CompanyRow {
   slug: string;
   display_name: string;
   status: Company['status'];
+  beta_phase: Company['betaPhase'] | null;
+  beta_enrollment_status: Company['betaEnrollmentStatus'] | null;
+  beta_notes: string | null;
+  beta_updated_at: string | Date | null;
   created_at: string | Date;
 }
 
@@ -22,6 +33,9 @@ export interface ObjectiveRow {
   company_id: string;
   title: string;
   summary: string | null;
+  target_repository_owner: string | null;
+  target_repository_name: string | null;
+  target_repository_id: string | number | null;
   status: Objective['status'];
   created_at: string | Date;
   updated_at: string | Date;
@@ -33,6 +47,9 @@ export interface WorkItemRow {
   objective_id: string;
   title: string;
   description: string | null;
+  target_repository_owner: string | null;
+  target_repository_name: string | null;
+  target_repository_id: string | number | null;
   status: WorkItem['status'];
   attempt_budget: number;
   requires_approval: boolean;
@@ -51,8 +68,10 @@ export interface RunRow {
   attempt: number;
   status: Run['status'];
   execution_packet_id: string | null;
+  head_sha: string | null;
   summary: string | null;
   failure_class: string | null;
+  available_at: string | Date;
   created_at: string | Date;
   updated_at: string | Date;
 }
@@ -77,8 +96,82 @@ export interface ExecutionPacketRow {
   created_at: string | Date;
 }
 
+export interface ClaimLeaseRow {
+  claim_id: string;
+  company_id: string;
+  work_item_id: string;
+  scope_ref: string;
+  holder_run_id: string;
+  lease_expires_at: string | Date;
+  lease_status: 'active' | 'expired' | 'released';
+  created_at: string | Date;
+  updated_at: string | Date;
+}
+
+export interface PersistedClaimLease extends ClaimLease {
+  leaseStatus: 'active' | 'expired' | 'released';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RunEffectRow {
+  effect_id: string;
+  company_id: string;
+  run_id: string;
+  execution_packet_id: string;
+  tool_call_id: string;
+  tool_kind: ToolKind;
+  tool_name: string;
+  effect_status: EffectEnvelope['effectStatus'];
+  started_at: string | Date;
+  completed_at: string | Date;
+  artifact_refs: string[];
+  result_payload: Record<string, unknown>;
+  error_class: string | null;
+  error_message: string | null;
+  created_at: string | Date;
+}
+
+export interface PersistedRunEffect extends EffectEnvelope {
+  effectId: string;
+  companyId: string;
+  executionPacketId: string;
+  toolKind: ToolKind;
+  toolName: string;
+  createdAt: string;
+}
+
 function normalizeTimestamp(value: string | Date): string {
   return value instanceof Date ? value.toISOString() : value;
+}
+
+function normalizeOptionalNumber(
+  value: string | number | null | undefined,
+): number | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  const numericValue =
+    typeof value === 'number' ? value : Number.parseInt(value, 10);
+
+  return Number.isFinite(numericValue) ? numericValue : undefined;
+}
+
+function mapRepositoryTarget(
+  owner: string | null,
+  name: string | null,
+  id: string | number | null,
+): RepositoryTarget | undefined {
+  if (!owner || !name) {
+    return undefined;
+  }
+
+  return {
+    owner,
+    name,
+    id: normalizeOptionalNumber(id),
+  };
 }
 
 export function mapCompanyRow(row: CompanyRow): Company {
@@ -87,6 +180,12 @@ export function mapCompanyRow(row: CompanyRow): Company {
     slug: row.slug,
     displayName: row.display_name,
     status: row.status,
+    betaPhase: row.beta_phase ?? 'internal_alpha',
+    betaEnrollmentStatus: row.beta_enrollment_status ?? 'active',
+    betaNotes: row.beta_notes ?? undefined,
+    betaUpdatedAt: row.beta_updated_at
+      ? normalizeTimestamp(row.beta_updated_at)
+      : normalizeTimestamp(row.created_at),
     createdAt: normalizeTimestamp(row.created_at),
   };
 }
@@ -97,6 +196,11 @@ export function mapObjectiveRow(row: ObjectiveRow): Objective {
     companyId: row.company_id,
     title: row.title,
     summary: row.summary ?? undefined,
+    repositoryTarget: mapRepositoryTarget(
+      row.target_repository_owner,
+      row.target_repository_name,
+      row.target_repository_id,
+    ),
     status: row.status,
     createdAt: normalizeTimestamp(row.created_at),
     updatedAt: normalizeTimestamp(row.updated_at),
@@ -110,6 +214,11 @@ export function mapWorkItemRow(row: WorkItemRow): WorkItem {
     objectiveId: row.objective_id,
     title: row.title,
     description: row.description ?? undefined,
+    repositoryTarget: mapRepositoryTarget(
+      row.target_repository_owner,
+      row.target_repository_name,
+      row.target_repository_id,
+    ),
     status: row.status,
     attemptBudget: row.attempt_budget,
     requiresApproval: row.requires_approval,
@@ -130,8 +239,10 @@ export function mapRunRow(row: RunRow): Run {
     attempt: row.attempt,
     status: row.status,
     executionPacketId: row.execution_packet_id ?? undefined,
+    headSha: row.head_sha ?? undefined,
     summary: row.summary ?? undefined,
     failureClass: row.failure_class ?? undefined,
+    availableAt: normalizeTimestamp(row.available_at),
     createdAt: normalizeTimestamp(row.created_at),
     updatedAt: normalizeTimestamp(row.updated_at),
   };
@@ -150,13 +261,56 @@ export function mapApprovalRow(row: ApprovalRow): ApprovalDecision {
   };
 }
 
+export function mapClaimLeaseRow(row: ClaimLeaseRow): PersistedClaimLease {
+  return {
+    claimId: row.claim_id,
+    companyId: row.company_id,
+    workItemId: row.work_item_id,
+    scopeRef: row.scope_ref,
+    holderRunId: row.holder_run_id,
+    leaseExpiresAt: normalizeTimestamp(row.lease_expires_at),
+    leaseStatus: row.lease_status,
+    createdAt: normalizeTimestamp(row.created_at),
+    updatedAt: normalizeTimestamp(row.updated_at),
+  };
+}
+
+export function mapRunEffectRow(row: RunEffectRow): PersistedRunEffect {
+  return {
+    effectId: row.effect_id,
+    companyId: row.company_id,
+    runId: row.run_id,
+    executionPacketId: row.execution_packet_id,
+    toolCallId: row.tool_call_id,
+    toolKind: row.tool_kind,
+    toolName: row.tool_name,
+    effectStatus: row.effect_status,
+    startedAt: normalizeTimestamp(row.started_at),
+    completedAt: normalizeTimestamp(row.completed_at),
+    artifactRefs: row.artifact_refs,
+    resultPayload: row.result_payload,
+    errorClass: row.error_class ?? undefined,
+    errorMessage: row.error_message ?? undefined,
+    createdAt: normalizeTimestamp(row.created_at),
+  };
+}
+
 export async function getCompanyById(
   db: Queryable,
   companyId: string,
 ): Promise<Company | null> {
   const result = await db.query<CompanyRow>(
     `
-      select company_id, slug, display_name, status, created_at
+      select
+        company_id,
+        slug,
+        display_name,
+        status,
+        beta_phase,
+        beta_enrollment_status,
+        beta_notes,
+        beta_updated_at,
+        created_at
       from companies
       where company_id = $1
       limit 1
@@ -173,7 +327,16 @@ export async function getCompanyBySlug(
 ): Promise<Company | null> {
   const result = await db.query<CompanyRow>(
     `
-      select company_id, slug, display_name, status, created_at
+      select
+        company_id,
+        slug,
+        display_name,
+        status,
+        beta_phase,
+        beta_enrollment_status,
+        beta_notes,
+        beta_updated_at,
+        created_at
       from companies
       where slug = $1
       limit 1
@@ -187,7 +350,16 @@ export async function getCompanyBySlug(
 export async function listCompanies(db: Queryable): Promise<Company[]> {
   const result = await db.query<CompanyRow>(
     `
-      select company_id, slug, display_name, status, created_at
+      select
+        company_id,
+        slug,
+        display_name,
+        status,
+        beta_phase,
+        beta_enrollment_status,
+        beta_notes,
+        beta_updated_at,
+        created_at
       from companies
       order by created_at asc
     `,
@@ -202,14 +374,70 @@ export async function insertCompany(
 ): Promise<void> {
   await db.query(
     `
-      insert into companies (company_id, slug, display_name, status, created_at)
-      values ($1, $2, $3, $4, $5)
+      insert into companies (
+        company_id,
+        slug,
+        display_name,
+        status,
+        beta_phase,
+        beta_enrollment_status,
+        beta_notes,
+        beta_updated_at,
+        created_at
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `,
     [
       company.companyId,
       company.slug,
       company.displayName,
       company.status,
+      company.betaPhase ?? null,
+      company.betaEnrollmentStatus ?? null,
+      company.betaNotes ?? null,
+      company.betaUpdatedAt ?? null,
+      company.createdAt,
+    ],
+  );
+}
+
+export async function upsertCompany(
+  db: Queryable,
+  company: Company,
+): Promise<void> {
+  await db.query(
+    `
+      insert into companies (
+        company_id,
+        slug,
+        display_name,
+        status,
+        beta_phase,
+        beta_enrollment_status,
+        beta_notes,
+        beta_updated_at,
+        created_at
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      on conflict (company_id)
+      do update set
+        slug = excluded.slug,
+        display_name = excluded.display_name,
+        status = excluded.status,
+        beta_phase = excluded.beta_phase,
+        beta_enrollment_status = excluded.beta_enrollment_status,
+        beta_notes = excluded.beta_notes,
+        beta_updated_at = excluded.beta_updated_at
+    `,
+    [
+      company.companyId,
+      company.slug,
+      company.displayName,
+      company.status,
+      company.betaPhase ?? null,
+      company.betaEnrollmentStatus ?? null,
+      company.betaNotes ?? null,
+      company.betaUpdatedAt ?? null,
       company.createdAt,
     ],
   );
@@ -221,7 +449,17 @@ export async function listObjectives(
 ): Promise<Objective[]> {
   const result = await db.query<ObjectiveRow>(
     `
-      select objective_id, company_id, title, summary, status, created_at, updated_at
+      select
+        objective_id,
+        company_id,
+        title,
+        summary,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
+        status,
+        created_at,
+        updated_at
       from objectives
       where company_id = $1
       order by created_at asc
@@ -235,7 +473,17 @@ export async function listObjectives(
 export async function listAllObjectives(db: Queryable): Promise<Objective[]> {
   const result = await db.query<ObjectiveRow>(
     `
-      select objective_id, company_id, title, summary, status, created_at, updated_at
+      select
+        objective_id,
+        company_id,
+        title,
+        summary,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
+        status,
+        created_at,
+        updated_at
       from objectives
       order by created_at asc
     `,
@@ -250,7 +498,17 @@ export async function getObjectiveById(
 ): Promise<Objective | null> {
   const result = await db.query<ObjectiveRow>(
     `
-      select objective_id, company_id, title, summary, status, created_at, updated_at
+      select
+        objective_id,
+        company_id,
+        title,
+        summary,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
+        status,
+        created_at,
+        updated_at
       from objectives
       where objective_id = $1
       limit 1
@@ -272,15 +530,21 @@ export async function upsertObjective(
         company_id,
         title,
         summary,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
         status,
         created_at,
         updated_at
       )
-      values ($1, $2, $3, $4, $5, $6, $7)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       on conflict (objective_id)
       do update set
         title = excluded.title,
         summary = excluded.summary,
+        target_repository_owner = excluded.target_repository_owner,
+        target_repository_name = excluded.target_repository_name,
+        target_repository_id = excluded.target_repository_id,
         status = excluded.status,
         updated_at = excluded.updated_at
     `,
@@ -289,6 +553,9 @@ export async function upsertObjective(
       objective.companyId,
       objective.title,
       objective.summary ?? null,
+      objective.repositoryTarget?.owner ?? null,
+      objective.repositoryTarget?.name ?? null,
+      objective.repositoryTarget?.id ?? null,
       objective.status,
       objective.createdAt,
       objective.updatedAt,
@@ -308,6 +575,9 @@ export async function listWorkItemsByObjective(
         objective_id,
         title,
         description,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
         status,
         attempt_budget,
         requires_approval,
@@ -370,6 +640,9 @@ export async function listWorkItems(
         objective_id,
         title,
         description,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
         status,
         attempt_budget,
         requires_approval,
@@ -401,6 +674,9 @@ export async function getWorkItemById(
         objective_id,
         title,
         description,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
         status,
         attempt_budget,
         requires_approval,
@@ -432,6 +708,9 @@ export async function upsertWorkItem(
         objective_id,
         title,
         description,
+        target_repository_owner,
+        target_repository_name,
+        target_repository_id,
         status,
         attempt_budget,
         requires_approval,
@@ -442,11 +721,14 @@ export async function upsertWorkItem(
         created_at,
         updated_at
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       on conflict (work_item_id)
       do update set
         title = excluded.title,
         description = excluded.description,
+        target_repository_owner = excluded.target_repository_owner,
+        target_repository_name = excluded.target_repository_name,
+        target_repository_id = excluded.target_repository_id,
         status = excluded.status,
         attempt_budget = excluded.attempt_budget,
         requires_approval = excluded.requires_approval,
@@ -462,6 +744,9 @@ export async function upsertWorkItem(
       workItem.objectiveId,
       workItem.title,
       workItem.description ?? null,
+      workItem.repositoryTarget?.owner ?? null,
+      workItem.repositoryTarget?.name ?? null,
+      workItem.repositoryTarget?.id ?? null,
       workItem.status,
       workItem.attemptBudget,
       workItem.requiresApproval,
@@ -488,8 +773,10 @@ export async function listRunsByWorkItem(
         attempt,
         status,
         execution_packet_id,
+        head_sha,
         summary,
         failure_class,
+        available_at,
         created_at,
         updated_at
       from runs
@@ -540,8 +827,10 @@ export async function listRuns(
         attempt,
         status,
         execution_packet_id,
+        head_sha,
         summary,
         failure_class,
+        available_at,
         created_at,
         updated_at
       from runs
@@ -567,8 +856,10 @@ export async function getRunById(
         attempt,
         status,
         execution_packet_id,
+        head_sha,
         summary,
         failure_class,
+        available_at,
         created_at,
         updated_at
       from runs
@@ -591,18 +882,22 @@ export async function upsertRun(db: Queryable, run: Run): Promise<void> {
         attempt,
         status,
         execution_packet_id,
+        head_sha,
         summary,
         failure_class,
+        available_at,
         created_at,
         updated_at
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       on conflict (run_id)
       do update set
         status = excluded.status,
         execution_packet_id = excluded.execution_packet_id,
+        head_sha = excluded.head_sha,
         summary = excluded.summary,
         failure_class = excluded.failure_class,
+        available_at = excluded.available_at,
         updated_at = excluded.updated_at
     `,
     [
@@ -612,8 +907,10 @@ export async function upsertRun(db: Queryable, run: Run): Promise<void> {
       run.attempt,
       run.status,
       run.executionPacketId ?? null,
+      run.headSha ?? null,
       run.summary ?? null,
       run.failureClass ?? null,
+      run.availableAt ?? run.createdAt,
       run.createdAt,
       run.updatedAt,
     ],
@@ -664,6 +961,342 @@ export async function getExecutionPacketByRunId(
   );
 
   return result.rows[0]?.packet ?? null;
+}
+
+export async function expireActiveClaimLeases(
+  db: Queryable,
+  input: {
+    companyId: string;
+    asOf: string;
+    scopeRef?: string;
+    holderRunId?: string;
+  },
+): Promise<PersistedClaimLease[]> {
+  const values: string[] = [input.companyId, input.asOf];
+  const clauses = ['company_id = $1', "lease_status = 'active'"];
+
+  if (input.scopeRef) {
+    values.push(input.scopeRef);
+    clauses.push(`scope_ref = $${values.length}`);
+  }
+
+  if (input.holderRunId) {
+    values.push(input.holderRunId);
+    clauses.push(`holder_run_id = $${values.length}`);
+  }
+
+  const result = await db.query<ClaimLeaseRow>(
+    `
+      update claim_leases
+      set
+        lease_status = 'expired',
+        updated_at = $2
+      where ${clauses.join(' and ')} and lease_expires_at <= $2
+      returning
+        claim_id,
+        company_id,
+        work_item_id,
+        scope_ref,
+        holder_run_id,
+        lease_expires_at,
+        lease_status,
+        created_at,
+        updated_at
+    `,
+    values,
+  );
+
+  return result.rows.map(mapClaimLeaseRow);
+}
+
+export async function getActiveClaimLeaseByScope(
+  db: Queryable,
+  companyId: string,
+  scopeRef: string,
+): Promise<PersistedClaimLease | null> {
+  const result = await db.query<ClaimLeaseRow>(
+    `
+      select
+        claim_id,
+        company_id,
+        work_item_id,
+        scope_ref,
+        holder_run_id,
+        lease_expires_at,
+        lease_status,
+        created_at,
+        updated_at
+      from claim_leases
+      where company_id = $1
+        and scope_ref = $2
+        and lease_status = 'active'
+      limit 1
+    `,
+    [companyId, scopeRef],
+  );
+
+  return result.rows[0] ? mapClaimLeaseRow(result.rows[0]) : null;
+}
+
+export async function getActiveClaimLeaseByRunId(
+  db: Queryable,
+  runId: string,
+): Promise<PersistedClaimLease | null> {
+  const result = await db.query<ClaimLeaseRow>(
+    `
+      select
+        claim_id,
+        company_id,
+        work_item_id,
+        scope_ref,
+        holder_run_id,
+        lease_expires_at,
+        lease_status,
+        created_at,
+        updated_at
+      from claim_leases
+      where holder_run_id = $1
+        and lease_status = 'active'
+      limit 1
+    `,
+    [runId],
+  );
+
+  return result.rows[0] ? mapClaimLeaseRow(result.rows[0]) : null;
+}
+
+export async function acquireClaimLease(
+  db: Queryable,
+  lease: PersistedClaimLease,
+): Promise<PersistedClaimLease | null> {
+  const result = await db.query<ClaimLeaseRow>(
+    `
+      insert into claim_leases (
+        claim_id,
+        company_id,
+        work_item_id,
+        scope_ref,
+        holder_run_id,
+        lease_expires_at,
+        lease_status,
+        created_at,
+        updated_at
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      on conflict do nothing
+      returning
+        claim_id,
+        company_id,
+        work_item_id,
+        scope_ref,
+        holder_run_id,
+        lease_expires_at,
+        lease_status,
+        created_at,
+        updated_at
+    `,
+    [
+      lease.claimId,
+      lease.companyId,
+      lease.workItemId,
+      lease.scopeRef,
+      lease.holderRunId,
+      lease.leaseExpiresAt,
+      lease.leaseStatus,
+      lease.createdAt,
+      lease.updatedAt,
+    ],
+  );
+
+  return result.rows[0] ? mapClaimLeaseRow(result.rows[0]) : null;
+}
+
+export async function updateClaimLease(
+  db: Queryable,
+  lease: PersistedClaimLease,
+): Promise<void> {
+  await db.query(
+    `
+      update claim_leases
+      set
+        holder_run_id = $2,
+        lease_expires_at = $3,
+        lease_status = $4,
+        updated_at = $5
+      where claim_id = $1
+    `,
+    [
+      lease.claimId,
+      lease.holderRunId,
+      lease.leaseExpiresAt,
+      lease.leaseStatus,
+      lease.updatedAt,
+    ],
+  );
+}
+
+export async function releaseClaimLeaseByRunId(
+  db: Queryable,
+  input: {
+    runId: string;
+    releasedAt: string;
+    leaseStatus?: 'expired' | 'released';
+  },
+): Promise<PersistedClaimLease | null> {
+  const result = await db.query<ClaimLeaseRow>(
+    `
+      update claim_leases
+      set
+        lease_status = $2,
+        lease_expires_at = $3,
+        updated_at = $3
+      where holder_run_id = $1
+        and lease_status = 'active'
+      returning
+        claim_id,
+        company_id,
+        work_item_id,
+        scope_ref,
+        holder_run_id,
+        lease_expires_at,
+        lease_status,
+        created_at,
+        updated_at
+    `,
+    [input.runId, input.leaseStatus ?? 'released', input.releasedAt],
+  );
+
+  return result.rows[0] ? mapClaimLeaseRow(result.rows[0]) : null;
+}
+
+export async function dequeueQueuedRun(
+  db: Queryable,
+  now: string,
+): Promise<Run | null> {
+  const result = await db.query<RunRow>(
+    `
+      with next_run as (
+        select run_id
+        from runs
+        where status = 'queued'
+          and available_at <= $1
+        order by available_at asc, created_at asc, attempt asc
+        limit 1
+        for update skip locked
+      )
+      update runs
+      set
+        status = 'running',
+        updated_at = $1
+      where run_id in (select run_id from next_run)
+      returning
+        run_id,
+        company_id,
+        work_item_id,
+        attempt,
+        status,
+        execution_packet_id,
+        head_sha,
+        summary,
+        failure_class,
+        available_at,
+        created_at,
+        updated_at
+    `,
+    [now],
+  );
+
+  return result.rows[0] ? mapRunRow(result.rows[0]) : null;
+}
+
+export async function storeRunEffect(
+  db: Queryable,
+  input: ExecutorResult & { companyId: string },
+): Promise<void> {
+  const effectId = `${input.effect.runId}:${input.toolRequest.toolCallId}`;
+  await db.query(
+    `
+      insert into run_effects (
+        effect_id,
+        company_id,
+        run_id,
+        execution_packet_id,
+        tool_call_id,
+        tool_kind,
+        tool_name,
+        effect_status,
+        started_at,
+        completed_at,
+        artifact_refs,
+        result_payload,
+        error_class,
+        error_message,
+        created_at
+      )
+      values (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12::jsonb, $13, $14, $15
+      )
+      on conflict (run_id, tool_call_id)
+      do update set
+        effect_status = excluded.effect_status,
+        started_at = excluded.started_at,
+        completed_at = excluded.completed_at,
+        artifact_refs = excluded.artifact_refs,
+        result_payload = excluded.result_payload,
+        error_class = excluded.error_class,
+        error_message = excluded.error_message,
+        created_at = excluded.created_at
+    `,
+    [
+      effectId,
+      input.companyId,
+      input.effect.runId,
+      input.toolRequest.executionPacketId,
+      input.toolRequest.toolCallId,
+      input.toolRequest.toolKind,
+      input.toolRequest.toolName,
+      input.effect.effectStatus,
+      input.effect.startedAt,
+      input.effect.completedAt,
+      JSON.stringify(input.effect.artifactRefs),
+      JSON.stringify(input.effect.resultPayload),
+      input.effect.errorClass ?? null,
+      input.effect.errorMessage ?? null,
+      input.effect.completedAt,
+    ],
+  );
+}
+
+export async function listRunEffectsByRunId(
+  db: Queryable,
+  runId: string,
+): Promise<PersistedRunEffect[]> {
+  const result = await db.query<RunEffectRow>(
+    `
+      select
+        effect_id,
+        company_id,
+        run_id,
+        execution_packet_id,
+        tool_call_id,
+        tool_kind,
+        tool_name,
+        effect_status,
+        started_at,
+        completed_at,
+        artifact_refs,
+        result_payload,
+        error_class,
+        error_message,
+        created_at
+      from run_effects
+      where run_id = $1
+      order by created_at asc
+    `,
+    [runId],
+  );
+
+  return result.rows.map(mapRunEffectRow);
 }
 
 export async function getApprovalByWorkItemId(

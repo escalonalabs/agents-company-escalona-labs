@@ -1,0 +1,169 @@
+global:
+  appUrl: http://agents-company.local
+  imagePullSecrets: []
+
+runtimeSecret:
+  existingSecretName: ""
+  externalSecret:
+    enabled: false
+    refreshInterval: 1h
+    creationPolicy: Owner
+    secretStoreRef:
+      kind: ClusterSecretStore
+      name: ""
+    remoteSecretKey: ""
+
+monitoring:
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    labels: {}
+    interval: 30s
+    scrapeTimeout: 10s
+  prometheusRule:
+    enabled: false
+    namespace: ""
+    labels: {}
+    controlPlaneDownFor: 5m
+    githubAppDownFor: 5m
+    authNotReadyFor: 10m
+    webhookRejectWindow: 10m
+
+controlPlane:
+  replicaCount: 1
+  image:
+    repository: agents-company/control-plane
+    tag: local
+    pullPolicy: IfNotPresent
+  service:
+    port: 3000
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/path: /metrics
+      prometheus.io/port: "3000"
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+  env:
+    nodeEnv: production
+    databaseUrl: postgresql://agents_company:agents_company@postgres.default.svc.cluster.local:5432/agents_company
+    storageEndpoint: http://minio.default.svc.cluster.local:9000
+    storageRegion: us-east-1
+    storageBucket: agents-company
+    storageAccessKey: minioadmin
+    storageSecretKey: minioadmin
+    storageForcePathStyle: "true"
+    mailSmtpUrl: smtp://mailpit.default.svc.cluster.local:1025
+    mailUiUrl: http://mailpit.default.svc.cluster.local:8025
+    sessionSecret: change-me-before-production
+    sessionTtlHours: "168"
+    invitationTtlHours: "168"
+    internalApiToken: change-me-before-production
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+githubApp:
+  replicaCount: 1
+  image:
+    repository: agents-company/github-app
+    tag: local
+    pullPolicy: IfNotPresent
+  service:
+    port: 3001
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/path: /metrics
+      prometheus.io/port: "3001"
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+  env:
+    nodeEnv: production
+    appId: ""
+    webhookSecret: ""
+    privateKey: ""
+    apiBaseUrl: https://api.github.com
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+controlWeb:
+  replicaCount: 1
+  image:
+    repository: agents-company/control-web
+    tag: local
+    pullPolicy: IfNotPresent
+  service:
+    port: 80
+    annotations: {}
+  serviceAccount:
+    create: false
+    name: ""
+    annotations: {}
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: agents-company.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []

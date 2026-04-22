@@ -1,40 +1,187 @@
+x-control-plane-env: &control-plane-env
+  AGENTS_COMPANY_NODE_ENV: ${AGENTS_COMPANY_NODE_ENV:-production}
+  AGENTS_COMPANY_APP_URL: ${AGENTS_COMPANY_APP_URL:-http://localhost:8080}
+  AGENTS_COMPANY_CONTROL_PLANE_PORT: ${AGENTS_COMPANY_CONTROL_PLANE_PORT:-3000}
+  AGENTS_COMPANY_DATABASE_URL: ${AGENTS_COMPANY_DATABASE_URL:-postgresql://agents_company:agents_company@postgres:5432/agents_company}
+  AGENTS_COMPANY_STORAGE_ENDPOINT: ${AGENTS_COMPANY_STORAGE_ENDPOINT:-http://minio:9000}
+  AGENTS_COMPANY_STORAGE_REGION: ${AGENTS_COMPANY_STORAGE_REGION:-us-east-1}
+  AGENTS_COMPANY_STORAGE_BUCKET: ${AGENTS_COMPANY_STORAGE_BUCKET:-agents-company-local}
+  AGENTS_COMPANY_STORAGE_ACCESS_KEY: ${AGENTS_COMPANY_STORAGE_ACCESS_KEY:-minioadmin}
+  AGENTS_COMPANY_STORAGE_SECRET_KEY: ${AGENTS_COMPANY_STORAGE_SECRET_KEY:-minioadmin}
+  AGENTS_COMPANY_STORAGE_FORCE_PATH_STYLE: ${AGENTS_COMPANY_STORAGE_FORCE_PATH_STYLE:-true}
+  AGENTS_COMPANY_MAIL_SMTP_URL: ${AGENTS_COMPANY_MAIL_SMTP_URL:-smtp://mailpit:1025}
+  AGENTS_COMPANY_MAIL_UI_URL: ${AGENTS_COMPANY_MAIL_UI_URL:-http://localhost:8025}
+  AGENTS_COMPANY_SESSION_SECRET: ${AGENTS_COMPANY_SESSION_SECRET:-change-me-before-production}
+  AGENTS_COMPANY_SESSION_TTL_HOURS: ${AGENTS_COMPANY_SESSION_TTL_HOURS:-168}
+  AGENTS_COMPANY_INVITATION_TTL_HOURS: ${AGENTS_COMPANY_INVITATION_TTL_HOURS:-168}
+  AGENTS_COMPANY_INTERNAL_API_TOKEN: ${AGENTS_COMPANY_INTERNAL_API_TOKEN:-change-me-before-production}
+
+x-github-app-env: &github-app-env
+  AGENTS_COMPANY_NODE_ENV: ${AGENTS_COMPANY_NODE_ENV:-production}
+  AGENTS_COMPANY_GITHUB_APP_PORT: ${AGENTS_COMPANY_GITHUB_APP_PORT:-3001}
+  AGENTS_COMPANY_CONTROL_PLANE_URL: http://control-plane:3000
+  AGENTS_COMPANY_INTERNAL_API_TOKEN: ${AGENTS_COMPANY_INTERNAL_API_TOKEN:-change-me-before-production}
+  AGENTS_COMPANY_GITHUB_APP_ID: ${AGENTS_COMPANY_GITHUB_APP_ID:-}
+  AGENTS_COMPANY_GITHUB_WEBHOOK_SECRET: ${AGENTS_COMPANY_GITHUB_WEBHOOK_SECRET:-}
+  AGENTS_COMPANY_GITHUB_PRIVATE_KEY: ${AGENTS_COMPANY_GITHUB_PRIVATE_KEY:-}
+  AGENTS_COMPANY_GITHUB_API_BASE_URL: ${AGENTS_COMPANY_GITHUB_API_BASE_URL:-https://api.github.com}
+
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: agents-company-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: agents_company
-      POSTGRES_USER: agents_company
-      POSTGRES_PASSWORD: agents_company
+      POSTGRES_DB: ${POSTGRES_DB:-agents_company}
+      POSTGRES_USER: ${POSTGRES_USER:-agents_company}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agents_company}
     ports:
-      - '5432:5432'
+      - '${POSTGRES_HOST_PORT:-55432}:5432'
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U agents_company -d agents_company']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-agents_company} -d ${POSTGRES_DB:-agents_company}',
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
 
   minio:
     image: minio/minio:RELEASE.2025-02-07T23-21-09Z
-    container_name: agents-company-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${AGENTS_COMPANY_STORAGE_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${AGENTS_COMPANY_STORAGE_SECRET_KEY:-minioadmin}
     ports:
-      - '9000:9000'
-      - '9001:9001'
+      - '${MINIO_API_HOST_PORT:-9000}:9000'
+      - '${MINIO_CONSOLE_HOST_PORT:-9001}:9001'
     volumes:
-      - ./data/minio:/data
+      - minio-data:/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://127.0.0.1:9000/minio/health/live > /dev/null',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   mailpit:
     image: axllent/mailpit:v1.23
-    container_name: agents-company-mailpit
     restart: unless-stopped
     ports:
-      - '1025:1025'
-      - '8025:8025'
+      - '${MAILPIT_SMTP_HOST_PORT:-1025}:1025'
+      - '${MAILPIT_UI_HOST_PORT:-8025}:8025'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -q -O /dev/null http://127.0.0.1:8025/api/v1/info',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  control-plane-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.control-plane
+    image: agents-company/control-plane:local
+    restart: "no"
+    environment: *control-plane-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["node", "server/control-plane/dist/db/migrate.js"]
+
+  control-plane:
+    build:
+      context: .
+      dockerfile: Dockerfile.control-plane
+    image: agents-company/control-plane:local
+    restart: unless-stopped
+    environment: *control-plane-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      control-plane-migrate:
+        condition: service_completed_successfully
+    ports:
+      - '${CONTROL_PLANE_HOST_PORT:-3000}:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  github-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.github-app
+    image: agents-company/github-app:local
+    restart: unless-stopped
+    environment: *github-app-env
+    depends_on:
+      control-plane:
+        condition: service_healthy
+    ports:
+      - '${GITHUB_APP_HOST_PORT:-3001}:3001'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/health').then(async (response) => { const payload = await response.json().catch(() => null); process.exit(response.ok && payload?.status === 'ok' ? 0 : 1); }).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  control-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.control-web
+    image: agents-company/control-web:local
+    restart: unless-stopped
+    depends_on:
+      control-plane:
+        condition: service_healthy
+    ports:
+      - '${CONTROL_WEB_HOST_PORT:-8080}:80'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -q -O /dev/null http://127.0.0.1/web-health',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  control-plane-seed:
+    profiles: ["sample-data"]
+    build:
+      context: .
+      dockerfile: Dockerfile.control-plane
+    image: agents-company/control-plane:local
+    restart: "no"
+    environment: *control-plane-env
+    depends_on:
+      control-plane-migrate:
+        condition: service_completed_successfully
+    command: ["node", "server/control-plane/dist/db/seed.js"]
+
+volumes:
+  postgres-data:
+  minio-data:

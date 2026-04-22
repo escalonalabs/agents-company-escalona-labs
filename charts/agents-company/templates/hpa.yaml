@@ -1,0 +1,71 @@
+{{- if .Values.controlPlane.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "agents-company.controlPlaneName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: control-plane
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "agents-company.controlPlaneName" . }}
+  minReplicas: {{ .Values.controlPlane.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.controlPlane.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.controlPlane.autoscaling.targetCPUUtilizationPercentage }}
+---
+{{- end }}
+{{- if .Values.githubApp.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "agents-company.githubAppName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: github-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "agents-company.githubAppName" . }}
+  minReplicas: {{ .Values.githubApp.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.githubApp.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.githubApp.autoscaling.targetCPUUtilizationPercentage }}
+---
+{{- end }}
+{{- if .Values.controlWeb.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "agents-company.controlWebName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: control-web
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "agents-company.controlWebName" . }}
+  minReplicas: {{ .Values.controlWeb.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.controlWeb.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.controlWeb.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}

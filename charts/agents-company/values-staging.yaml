@@ -1,0 +1,145 @@
+fullnameOverride: agents-company
+
+global:
+  appUrl: https://staging.agents-company.escalonalabs.com
+
+runtimeSecret:
+  existingSecretName: agents-company-staging-runtime
+  externalSecret:
+    enabled: true
+    secretStoreRef:
+      kind: ClusterSecretStore
+      name: aws-secretsmanager
+    remoteSecretKey: agents-company-staging/runtime
+
+monitoring:
+  serviceMonitor:
+    enabled: true
+    namespace: observability
+    labels:
+      release: kube-prometheus-stack
+  prometheusRule:
+    enabled: true
+    namespace: observability
+    labels:
+      release: kube-prometheus-stack
+
+controlPlane:
+  replicaCount: 2
+  image:
+    repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-staging/control-plane
+    tag: staging
+  serviceAccount:
+    create: true
+    name: agents-company-control-plane
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/agents-company-staging-runtime
+  env:
+    nodeEnv: production
+    databaseUrl: postgresql://agents_company:${DB_PASSWORD}@agents-company-staging.cluster-abcdefghijkl.us-east-1.rds.amazonaws.com:5432/agents_company
+    storageEndpoint: https://s3.us-east-1.amazonaws.com
+    storageRegion: us-east-1
+    storageBucket: agents-company-staging-artifacts
+    storageAccessKey: use-irsa
+    storageSecretKey: use-irsa
+    storageForcePathStyle: "false"
+    mailSmtpUrl: smtp://smtp-user:smtp-password@email-smtp.us-east-1.amazonaws.com:587
+    mailUiUrl: ""
+    sessionSecret: set-via-existing-secret
+    internalApiToken: set-via-existing-secret
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 65
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: control-plane
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+githubApp:
+  replicaCount: 2
+  image:
+    repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-staging/github-app
+    tag: staging
+  serviceAccount:
+    create: true
+    name: agents-company-github-app
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/agents-company-staging-runtime
+  env:
+    nodeEnv: production
+    appId: set-via-existing-secret
+    webhookSecret: set-via-existing-secret
+    privateKey: set-via-existing-secret
+    apiBaseUrl: https://api.github.com
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 60
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: github-app
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+controlWeb:
+  replicaCount: 2
+  image:
+    repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-staging/control-web
+    tag: staging
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 60
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/healthcheck-path: /web-health
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
+    hosts:
+      - host: staging.agents-company.escalonalabs.com
+        paths:
+          - path: /
+            pathType: Prefix

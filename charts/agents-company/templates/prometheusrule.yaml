@@ -1,0 +1,57 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "agents-company.fullname" . }}-alerts
+  {{- with .Values.monitoring.prometheusRule.namespace }}
+  namespace: {{ . }}
+  {{- end }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: agents-company-runtime
+      rules:
+        - alert: AgentsCompanyControlPlaneDown
+          expr: agents_company_control_plane_up == 0
+          for: {{ .Values.monitoring.prometheusRule.controlPlaneDownFor }}
+          labels:
+            severity: critical
+          annotations:
+            summary: Control-plane is unavailable.
+            description: Control-plane metrics endpoint is not reporting healthy.
+        - alert: AgentsCompanyControlPlaneAuthNotReady
+          expr: agents_company_control_plane_auth_session_ready == 0 or agents_company_control_plane_auth_internal_api_ready == 0
+          for: {{ .Values.monitoring.prometheusRule.authNotReadyFor }}
+          labels:
+            severity: warning
+          annotations:
+            summary: Control-plane auth boundary is not fully ready.
+            description: Session or internal API auth is misconfigured.
+        - alert: AgentsCompanyGitHubAppDown
+          expr: agents_company_github_app_up == 0
+          for: {{ .Values.monitoring.prometheusRule.githubAppDownFor }}
+          labels:
+            severity: critical
+          annotations:
+            summary: GitHub App runtime is unavailable.
+            description: The GitHub App service is not exporting metrics.
+        - alert: AgentsCompanyGitHubAppNotReady
+          expr: agents_company_github_app_credentials_ready == 0 or agents_company_github_app_webhook_verification_ready == 0 or agents_company_github_app_control_plane_ready == 0
+          for: {{ .Values.monitoring.prometheusRule.authNotReadyFor }}
+          labels:
+            severity: warning
+          annotations:
+            summary: GitHub App runtime is degraded.
+            description: GitHub credentials, webhook verification, or control-plane auth is incomplete.
+        - alert: AgentsCompanyGitHubWebhookRejecting
+          expr: increase(agents_company_github_app_rejected_deliveries_total[{{ .Values.monitoring.prometheusRule.webhookRejectWindow }}]) > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: GitHub App is rejecting webhook deliveries.
+            description: At least one webhook delivery was rejected inside the configured alert window.
+{{- end }}

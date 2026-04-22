@@ -13,6 +13,15 @@ export type EndpointState<TData> = {
   lastSuccessAt: string | null;
 };
 
+export type EventStreamState<TData> = {
+  phase: EndpointPhase;
+  url: string;
+  data: TData | null;
+  errorMessage: string | null;
+  lastEventAt: string | null;
+  lastHeartbeatAt: string | null;
+};
+
 function normalizeBaseUrl(value: string | undefined): string {
   if (!value) return '';
   return value.endsWith('/') ? value.slice(0, -1) : value;
@@ -31,14 +40,23 @@ type FetchJsonResult<T> =
 async function fetchJson<T>(
   url: string,
   signal: AbortSignal,
-  options?: { optional?: boolean },
+  options?: {
+    optional?: boolean;
+    method?: 'GET' | 'POST';
+    body?: Record<string, unknown>;
+  },
 ): Promise<FetchJsonResult<T>> {
   let response: Response;
 
   try {
     response = await fetch(url, {
-      method: 'GET',
-      headers: { accept: 'application/json' },
+      method: options?.method ?? 'GET',
+      credentials: 'include',
+      headers: {
+        accept: 'application/json',
+        ...(options?.body ? { 'content-type': 'application/json' } : {}),
+      },
+      body: options?.body ? JSON.stringify(options.body) : undefined,
       signal,
     });
   } catch (error) {
@@ -85,15 +103,37 @@ async function fetchJson<T>(
   }
 }
 
+export async function postControlPlaneJson<TData extends JsonValue>(
+  path: string,
+  options?: {
+    body?: Record<string, unknown>;
+    optional?: boolean;
+  },
+): Promise<FetchJsonResult<TData>> {
+  const controller = new AbortController();
+  const baseUrl = getControlPlaneBaseUrl();
+  const url = `${baseUrl}${path}`;
+
+  try {
+    return await fetchJson<TData>(url, controller.signal, {
+      body: options?.body,
+      method: 'POST',
+      optional: options?.optional,
+    });
+  } finally {
+    controller.abort();
+  }
+}
+
 export function useControlPlaneEndpoint<TData extends JsonValue>(
   path: string,
-  options: { refreshSeed: number; optional?: boolean },
+  options: { refreshSeed: number; optional?: boolean; enabled?: boolean },
 ): EndpointState<TData> {
-  const { optional, refreshSeed } = options;
+  const { enabled = true, optional, refreshSeed } = options;
   const baseUrl = useMemo(() => getControlPlaneBaseUrl(), []);
   const url = useMemo(() => `${baseUrl}${path}`, [baseUrl, path]);
   const [state, setState] = useState<EndpointState<TData>>({
-    phase: 'loading',
+    phase: enabled ? 'loading' : 'unavailable',
     url,
     data: null,
     statusCode: null,
@@ -104,6 +144,17 @@ export function useControlPlaneEndpoint<TData extends JsonValue>(
   useEffect(() => {
     const controller = new AbortController();
     void refreshSeed;
+
+    if (!enabled) {
+      setState((previous) => ({
+        ...previous,
+        url,
+        phase: 'unavailable',
+        statusCode: null,
+        errorMessage: 'Request disabled.',
+      }));
+      return () => controller.abort();
+    }
 
     setState((previous) => ({
       ...previous,
@@ -155,7 +206,123 @@ export function useControlPlaneEndpoint<TData extends JsonValue>(
     })();
 
     return () => controller.abort();
-  }, [optional, refreshSeed, url]);
+  }, [enabled, optional, refreshSeed, url]);
+
+  return state;
+}
+
+export function useControlPlaneEventStream<TData extends JsonValue>(
+  path: string,
+  options: { enabled?: boolean },
+): EventStreamState<TData> {
+  const { enabled = true } = options;
+  const baseUrl = useMemo(() => getControlPlaneBaseUrl(), []);
+  const url = useMemo(
+    () => (enabled ? `${baseUrl}${path}` : ''),
+    [baseUrl, enabled, path],
+  );
+  const [state, setState] = useState<EventStreamState<TData>>({
+    phase: enabled ? 'loading' : 'unavailable',
+    url,
+    data: null,
+    errorMessage: null,
+    lastEventAt: null,
+    lastHeartbeatAt: null,
+  });
+
+  useEffect(() => {
+    if (!enabled || !url) {
+      setState({
+        phase: 'unavailable',
+        url,
+        data: null,
+        errorMessage: 'Event stream disabled.',
+        lastEventAt: null,
+        lastHeartbeatAt: null,
+      });
+      return;
+    }
+
+    const source = new EventSource(url, { withCredentials: true });
+
+    setState((previous) => ({
+      ...previous,
+      phase: 'loading',
+      url,
+      errorMessage: null,
+    }));
+
+    const handleSnapshot = (event: MessageEvent<string>) => {
+      try {
+        const payload = JSON.parse(event.data) as TData & {
+          sentAt?: string;
+        };
+
+        setState({
+          phase: 'success',
+          url,
+          data: payload,
+          errorMessage: null,
+          lastEventAt: payload.sentAt ?? new Date().toISOString(),
+          lastHeartbeatAt: null,
+        });
+      } catch (error) {
+        setState((previous) => ({
+          ...previous,
+          phase: 'error',
+          url,
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : 'Failed to parse event stream snapshot.',
+        }));
+      }
+    };
+
+    const handleHeartbeat = (event: MessageEvent<string>) => {
+      try {
+        const payload = JSON.parse(event.data) as {
+          sentAt?: string;
+        };
+
+        setState((previous) => ({
+          ...previous,
+          phase: previous.data ? 'success' : previous.phase,
+          url,
+          errorMessage: null,
+          lastHeartbeatAt: payload.sentAt ?? new Date().toISOString(),
+        }));
+      } catch {
+        setState((previous) => ({
+          ...previous,
+          lastHeartbeatAt: new Date().toISOString(),
+        }));
+      }
+    };
+
+    const handleError = () => {
+      setState((previous) => ({
+        ...previous,
+        phase: previous.data ? 'success' : 'error',
+        url,
+        errorMessage:
+          previous.data !== null
+            ? previous.errorMessage
+            : 'Event stream connection failed.',
+      }));
+    };
+
+    source.addEventListener('snapshot', handleSnapshot as EventListener);
+    source.addEventListener('heartbeat', handleHeartbeat as EventListener);
+    source.addEventListener('error', handleError as EventListener);
+
+    return () => {
+      source.removeEventListener('snapshot', handleSnapshot as EventListener);
+      source.removeEventListener('heartbeat', handleHeartbeat as EventListener);
+      source.removeEventListener('error', handleError as EventListener);
+      source.close();
+    };
+  }, [enabled, url]);
 
   return state;
 }

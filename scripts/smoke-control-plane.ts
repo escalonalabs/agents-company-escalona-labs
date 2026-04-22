@@ -2,14 +2,24 @@ import { closePool } from '../server/control-plane/src/db/pool';
 import { buildControlPlaneServer } from '../server/control-plane/src/server';
 
 async function main() {
+  process.env.AGENTS_COMPANY_SESSION_SECRET ??= 'smoke-session-secret';
+  process.env.AGENTS_COMPANY_INTERNAL_API_TOKEN ??= 'smoke-internal-token';
+
   const server = buildControlPlaneServer();
   const slugSuffix = Date.now().toString(36);
+  const internalHeaders = {
+    'x-agents-company-internal-token':
+      process.env.AGENTS_COMPANY_INTERNAL_API_TOKEN ?? 'smoke-internal-token',
+  };
 
   try {
     const createCompany = await server.inject({
       method: 'POST',
       url: '/companies',
-      headers: { 'x-idempotency-key': `smoke-company-${slugSuffix}` },
+      headers: {
+        ...internalHeaders,
+        'x-idempotency-key': `smoke-company-${slugSuffix}`,
+      },
       payload: {
         slug: `validation-co-${slugSuffix}`,
         displayName: 'Validation Co',
@@ -21,7 +31,10 @@ async function main() {
     const createGatedObjective = await server.inject({
       method: 'POST',
       url: '/objectives',
-      headers: { 'x-idempotency-key': `smoke-objective-gated-${slugSuffix}` },
+      headers: {
+        ...internalHeaders,
+        'x-idempotency-key': `smoke-objective-gated-${slugSuffix}`,
+      },
       payload: {
         companyId,
         title: 'Approval gated objective',
@@ -45,12 +58,14 @@ async function main() {
     const withheldDispatch = await server.inject({
       method: 'POST',
       url: `/work-items/${gatedWorkItem.workItemId}/dispatch`,
+      headers: internalHeaders,
     });
     const withheldPayload = withheldDispatch.json();
 
     const grantApproval = await server.inject({
       method: 'POST',
       url: `/approvals/${approval.approvalId}/grant`,
+      headers: internalHeaders,
       payload: { decisionReason: 'validated in smoke script' },
     });
     const grantedPayload = grantApproval.json();
@@ -58,7 +73,10 @@ async function main() {
     const dispatchedRun = await server.inject({
       method: 'POST',
       url: `/work-items/${gatedWorkItem.workItemId}/dispatch`,
-      headers: { 'x-idempotency-key': `smoke-dispatch-gated-${slugSuffix}` },
+      headers: {
+        ...internalHeaders,
+        'x-idempotency-key': `smoke-dispatch-gated-${slugSuffix}`,
+      },
       payload: { assignedAgentId: 'agent.validation.runner' },
     });
     const dispatchPayload = dispatchedRun.json();
@@ -67,7 +85,10 @@ async function main() {
     const completedRun = await server.inject({
       method: 'POST',
       url: `/runs/${runId}/complete`,
-      headers: { 'x-idempotency-key': `smoke-complete-gated-${slugSuffix}` },
+      headers: {
+        ...internalHeaders,
+        'x-idempotency-key': `smoke-complete-gated-${slugSuffix}`,
+      },
       payload: {
         resultStatus: 'valid_success',
         summary: 'Work item completed with valid output.',
@@ -82,6 +103,7 @@ async function main() {
       method: 'POST',
       url: '/objectives',
       headers: {
+        ...internalHeaders,
         'x-idempotency-key': `smoke-objective-failclosed-${slugSuffix}`,
       },
       payload: {
@@ -105,6 +127,7 @@ async function main() {
       method: 'POST',
       url: `/work-items/${failClosedWorkItem.workItemId}/dispatch`,
       headers: {
+        ...internalHeaders,
         'x-idempotency-key': `smoke-dispatch-failclosed-${slugSuffix}`,
       },
     });
@@ -115,6 +138,7 @@ async function main() {
       method: 'POST',
       url: `/runs/${failClosedRunId}/complete`,
       headers: {
+        ...internalHeaders,
         'x-idempotency-key': `smoke-complete-failclosed-${slugSuffix}`,
       },
       payload: {
@@ -128,6 +152,7 @@ async function main() {
     const replay = await server.inject({
       method: 'GET',
       url: `/companies/${companyId}/replay`,
+      headers: internalHeaders,
     });
     const replayPayload = replay.json();
 
@@ -135,6 +160,7 @@ async function main() {
       JSON.stringify(
         {
           createCompanyStatus: createCompany.statusCode,
+          authMode: 'internal',
           createObjectiveStatus: createGatedObjective.statusCode,
           withheldDispatchStatus: withheldDispatch.statusCode,
           withheldDecision: withheldPayload.decision?.status,
@@ -153,6 +179,9 @@ async function main() {
           replayEventCount: replayPayload.eventCount,
           replayObjectiveCount: replayPayload.replayedState?.objectives?.length,
           replayRunCount: replayPayload.replayedState?.runs?.length,
+          internalTokenConfigured: Boolean(
+            internalHeaders['x-agents-company-internal-token'],
+          ),
         },
         null,
         2,

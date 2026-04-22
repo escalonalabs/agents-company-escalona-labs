@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -162,6 +163,25 @@ def main() -> int:
         for finding in findings:
             print(f"- {finding}")
         return 1
+
+    print("Replay regression fixture contract passed.")
+    print("Running kernel replay harness against golden fixtures...")
+
+    result = subprocess.run(
+        [
+            "pnpm",
+            "exec",
+            "vitest",
+            "run",
+            "packages/kernel/src/goldenReplayHarness.test.ts",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+    )
+
+    if result.returncode != 0:
+        print("Kernel replay harness failed.")
+        return result.returncode
 
     print("Replay regression fixtures passed.")
     return 0

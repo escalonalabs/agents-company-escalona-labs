@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "pnpm exec tsx watch src/server.ts",
     "build": "pnpm exec tsup src/server.ts --format esm --clean",
-    "typecheck": "pnpm exec tsc -p tsconfig.json"
+    "typecheck": "pnpm exec tsc -p tsconfig.json",
+    "test": "pnpm exec tsx --test src/**/*.test.ts"
   }
 }

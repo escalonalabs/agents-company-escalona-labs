@@ -8,8 +8,12 @@ coverage/
 .tsbuildinfo
 .env.*.local
 tmp/
+backups/
 data/
 .local/
+.terraform/
+*.tfstate
+*.tfstate.*
 .DS_Store
 .env
 .env.local

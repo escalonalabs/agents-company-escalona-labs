@@ -30,6 +30,17 @@ REQUIRED_STATUS_CHECKS = [
     "replay-regression",
     "ci",
 ]
+RELEASE_REQUIRED_STATUS_CHECKS = [
+    "quality",
+    "bootstrap-smoke",
+    "integration-smokes",
+    "self-hosted-smoke",
+    "repo-guardrails",
+    "dependency-review",
+    "secret-scan",
+    "replay-regression",
+]
+RELEASE_RULESET_NAME = "Release Candidate Protection"
 
 
 def gh(*args: str, cwd: Path | None = None, input_text: str | None = None) -> str:
@@ -125,6 +136,10 @@ def requested_operations(args: argparse.Namespace) -> list[str]:
         requested.append("protect_main")
     if args.unprotect_main:
         requested.append("unprotect_main")
+    if args.protect_release:
+        requested.append("protect_release")
+    if args.unprotect_release:
+        requested.append("unprotect_release")
     if requested:
         return requested
     return ["sync_labels", "sync_milestones", "sync_issues"]
@@ -369,6 +384,75 @@ def unprotect_main(repo: str) -> None:
     gh_api_json("DELETE", f"repos/{repo}/branches/main/protection")
 
 
+def list_rulesets(repo: str) -> list[dict[str, Any]]:
+    return gh_paginated_items(f"repos/{repo}/rulesets?per_page=100")
+
+
+def find_ruleset_by_name(repo: str, name: str) -> dict[str, Any] | None:
+    for ruleset in list_rulesets(repo):
+        if ruleset.get("name") == name:
+            return ruleset
+    return None
+
+
+def build_required_status_checks(contexts: list[str]) -> dict[str, Any]:
+    return {
+        "type": "required_status_checks",
+        "parameters": {
+            "strict_required_status_checks_policy": True,
+            "required_status_checks": [{"context": context} for context in contexts],
+        },
+    }
+
+
+def build_release_ruleset_payload() -> dict[str, Any]:
+    return {
+        "name": RELEASE_RULESET_NAME,
+        "target": "branch",
+        "enforcement": "active",
+        "conditions": {
+            "ref_name": {
+                "include": ["refs/heads/release/*"],
+                "exclude": [],
+            }
+        },
+        "bypass_actors": [],
+        "rules": [
+            {"type": "deletion"},
+            {"type": "non_fast_forward"},
+            {
+                "type": "pull_request",
+                "parameters": {
+                    "dismiss_stale_reviews_on_push": True,
+                    "require_code_owner_review": True,
+                    "require_last_push_approval": False,
+                    "required_approving_review_count": 1,
+                    "required_review_thread_resolution": True,
+                },
+            },
+            build_required_status_checks(RELEASE_REQUIRED_STATUS_CHECKS),
+        ],
+    }
+
+
+def protect_release(repo: str) -> None:
+    payload = build_release_ruleset_payload()
+    existing = find_ruleset_by_name(repo, RELEASE_RULESET_NAME)
+
+    if existing is None:
+        gh_api_json("POST", f"repos/{repo}/rulesets", payload)
+        return
+
+    gh_api_json("PUT", f"repos/{repo}/rulesets/{existing['id']}", payload)
+
+
+def unprotect_release(repo: str) -> None:
+    existing = find_ruleset_by_name(repo, RELEASE_RULESET_NAME)
+    if existing is None:
+        return
+    gh_api_json("DELETE", f"repos/{repo}/rulesets/{existing['id']}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True, help="owner/name")
@@ -383,6 +467,16 @@ def main() -> int:
     )
     parser.add_argument("--protect-main", action="store_true", help="Apply branch protection on main")
     parser.add_argument("--unprotect-main", action="store_true", help="Remove branch protection from main")
+    parser.add_argument(
+        "--protect-release",
+        action="store_true",
+        help="Apply a repository ruleset that protects release/* branches",
+    )
+    parser.add_argument(
+        "--unprotect-release",
+        action="store_true",
+        help="Remove the repository ruleset that protects release/* branches",
+    )
     parser.add_argument("--delete-default-labels", action="store_true", help="Delete GitHub default labels")
     args = parser.parse_args()
 
@@ -404,6 +498,12 @@ def main() -> int:
             print(f"- branch protection: require {', '.join(REQUIRED_STATUS_CHECKS)}")
         if "unprotect_main" in operations:
             print("- branch protection: remove from main")
+        if "protect_release" in operations:
+            print(
+                f"- release ruleset: require PR + reviews + {', '.join(RELEASE_REQUIRED_STATUS_CHECKS)} on release/*"
+            )
+        if "unprotect_release" in operations:
+            print("- release ruleset: remove from release/*")
         return 0
 
     try:
@@ -430,6 +530,12 @@ def main() -> int:
 
         if "unprotect_main" in operations:
             unprotect_main(args.repo)
+
+        if "protect_release" in operations:
+            protect_release(args.repo)
+
+        if "unprotect_release" in operations:
+            unprotect_release(args.repo)
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 1

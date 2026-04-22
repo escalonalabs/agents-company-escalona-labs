@@ -4,6 +4,7 @@ import type { Company, DomainEvent } from '@escalonalabs/domain';
 
 import {
   createCompanyCreatedEvent,
+  createCompanyEvent,
   nextStreamSequence,
   replayAggregate,
 } from './ledger';
@@ -13,6 +14,9 @@ const company: Company = {
   slug: 'escalona-labs',
   displayName: 'Escalona Labs',
   status: 'active',
+  betaPhase: 'internal_alpha',
+  betaEnrollmentStatus: 'active',
+  betaUpdatedAt: '2026-04-22T00:00:00Z',
   createdAt: '2026-04-22T00:00:00Z',
 };
 
@@ -71,5 +75,29 @@ describe('kernel ledger helpers', () => {
     ]);
 
     expect(state.companies[company.companyId]).toEqual(company);
+  });
+
+  it('creates company.updated snapshots with the latest beta timestamp', () => {
+    const updatedCompany: Company = {
+      ...company,
+      betaPhase: 'controlled_beta',
+      betaEnrollmentStatus: 'active',
+      betaNotes: 'Allowlisted cohort enabled.',
+      betaUpdatedAt: '2026-04-22T02:00:00Z',
+    };
+
+    const event = createCompanyEvent({
+      company: updatedCompany,
+      eventId: 'evt_company_003',
+      eventType: 'company.updated',
+      streamSequence: 2,
+      commandId: 'cmd_company_003',
+      idempotencyKey: 'company:update-beta:escalona-labs',
+      actorRef: 'control-plane',
+    });
+
+    expect(event.eventType).toBe('company.updated');
+    expect(event.occurredAt).toBe('2026-04-22T02:00:00Z');
+    expect(event.payload).toEqual(updatedCompany);
   });
 });

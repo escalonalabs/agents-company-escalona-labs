@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 import { closePool, getPool } from './pool';
 
-async function seed() {
+export async function seed() {
   const pool = getPool();
   const companyId = `company_${randomUUID()}`;
 
@@ -16,10 +17,16 @@ async function seed() {
   );
 }
 
-seed()
-  .then(() => {
-    console.log('control-plane seed complete');
-  })
-  .finally(async () => {
-    await closePool();
-  });
+const isEntrypoint =
+  process.argv[1] !== undefined &&
+  fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isEntrypoint) {
+  seed()
+    .then(() => {
+      console.log('control-plane seed complete');
+    })
+    .finally(async () => {
+      await closePool();
+    });
+}

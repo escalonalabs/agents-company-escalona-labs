@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - release/*
 
 permissions:
   contents: read
@@ -18,4 +19,3 @@ jobs:
 
       - name: Validate repository guardrails
         run: python3 .github/scripts/repo_guardrails.py
-

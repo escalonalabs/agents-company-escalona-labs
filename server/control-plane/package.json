@@ -6,16 +6,24 @@
   "dependencies": {
     "@escalonalabs/domain": "workspace:*",
     "@escalonalabs/execution": "workspace:*",
+    "@escalonalabs/github": "workspace:*",
     "@escalonalabs/kernel": "workspace:*",
+    "@escalonalabs/memory": "workspace:*",
     "@escalonalabs/orchestration": "workspace:*",
     "fastify": "^5.6.1",
+    "nodemailer": "^8.0.5",
     "pg": "^8.16.3"
   },
   "scripts": {
     "dev": "pnpm exec tsx watch src/server.ts",
-    "build": "pnpm exec tsup src/server.ts src/db/migrate.ts src/db/seed.ts --format esm --clean",
+    "dev:worker": "pnpm exec tsx watch src/worker.ts",
+    "worker": "pnpm exec tsx src/worker.ts",
+    "build": "pnpm exec tsup src/server.ts src/worker.ts src/db/migrate.ts src/db/seed.ts --format esm --clean",
     "typecheck": "pnpm exec tsc -p tsconfig.json",
     "db:migrate": "pnpm exec tsx src/db/migrate.ts",
     "db:seed": "pnpm exec tsx src/db/seed.ts"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^8.0.0"
   }
 }

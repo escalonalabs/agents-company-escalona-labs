@@ -1,0 +1,71 @@
+FROM node:20-alpine AS build
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
+
+WORKDIR /workspace
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages ./packages
+COPY apps ./apps
+
+RUN pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+RUN pnpm --filter @escalonalabs/control-web run build
+
+FROM nginx:1.27-alpine AS runtime
+
+RUN cat <<'EOF' > /etc/nginx/conf.d/default.conf
+server {
+  listen 80;
+  server_name _;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  client_max_body_size 10m;
+
+  location = /web-health {
+    access_log off;
+    add_header Content-Type text/plain;
+    return 200 'ok';
+  }
+
+  location = /webhooks/github {
+    proxy_pass http://github-app:3001;
+    proxy_http_version 1.1;
+    proxy_buffering off;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Connection "";
+  }
+
+  location ~ ^/(health|auth|companies|company-invitations|events|objectives|approvals|work-items|runs)(/|$) {
+    proxy_pass http://control-plane:3000;
+    proxy_http_version 1.1;
+    proxy_buffering off;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Connection "";
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+EOF
+
+COPY --from=build /workspace/apps/control-web/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

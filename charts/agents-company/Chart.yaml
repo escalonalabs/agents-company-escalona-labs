@@ -1,0 +1,7 @@
+apiVersion: v2
+name: agents-company
+description: Minimal self-hosted foundation for Agents Company app surfaces
+type: application
+version: 0.1.0
+appVersion: "0.0.0"
+

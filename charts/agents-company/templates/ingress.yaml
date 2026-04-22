@@ -1,0 +1,35 @@
+{{- if .Values.controlWeb.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "agents-company.controlWebName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+  {{- with .Values.controlWeb.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.controlWeb.ingress.className }}
+  ingressClassName: {{ .Values.controlWeb.ingress.className }}
+  {{- end }}
+  rules:
+    {{- range .Values.controlWeb.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "agents-company.controlWebName" $ }}
+                port:
+                  number: {{ $.Values.controlWeb.service.port }}
+          {{- end }}
+    {{- end }}
+  {{- with .Values.controlWeb.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

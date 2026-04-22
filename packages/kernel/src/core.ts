@@ -50,6 +50,7 @@ export function applyEvent(
 
   switch (event.eventType) {
     case 'company.created':
+    case 'company.updated':
       nextState.companies[event.aggregateId] = asCompany(
         event.payload as Company,
       );

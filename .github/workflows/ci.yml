@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - release/*
 
 permissions:
   contents: read
@@ -41,3 +42,118 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  bootstrap-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Boot local stack
+        run: pnpm dev:stack
+
+      - name: Bootstrap smoke
+        run: pnpm smoke:bootstrap
+
+      - name: Runtime smoke
+        run: pnpm smoke:runtime
+
+      - name: GitHub backbone smoke
+        run: pnpm smoke:github-backbone
+
+      - name: Memory smoke
+        run: pnpm smoke:memory
+
+      - name: Customer foundations smoke
+        run: pnpm smoke:customer-foundations
+
+      - name: Shut down local stack
+        if: always()
+        run: pnpm dev:stack:down
+
+  integration-smokes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          install-dependencies: true
+
+      - name: Boot local stack
+        run: pnpm dev:stack
+
+      - name: GitHub backbone smoke
+        run: pnpm smoke:github-backbone
+
+      - name: Memory smoke
+        run: pnpm smoke:memory
+
+      - name: Customer foundations smoke
+        run: pnpm smoke:customer-foundations
+
+      - name: Control web smoke
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: pnpm smoke:control-web
+
+      - name: Shut down local stack
+        if: always()
+        run: pnpm dev:stack:down
+
+  self-hosted-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Self-hosted compose smoke
+        run: pnpm smoke:self-hosted

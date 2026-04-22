@@ -12,9 +12,31 @@ import {
 
 export type DispatchDecision =
   | { status: 'dispatched'; workItemId: string }
-  | { status: 'withheld_missing_approval'; workItemId: string }
-  | { status: 'withheld_no_new_causal_input'; workItemId: string }
-  | { status: 'withheld_scope_conflict'; workItemId: string };
+  | {
+      status: 'withheld_missing_approval';
+      workItemId: string;
+      blockingReason: 'approval_required';
+    }
+  | {
+      status: 'withheld_no_new_causal_input';
+      workItemId: string;
+      blockingReason: 'no_new_causal_input';
+    }
+  | {
+      status: 'withheld_scope_conflict';
+      workItemId: string;
+      blockingReason: 'scope_conflict';
+    }
+  | {
+      status: 'withheld_retry_budget_exhausted';
+      workItemId: string;
+      blockingReason: 'attempt_budget_exhausted';
+    }
+  | {
+      status: 'escalated';
+      workItemId: string;
+      blockingReason: 'no_new_causal_input';
+    };
 
 export interface PlannedWorkItemInput {
   title: string;
@@ -112,6 +134,24 @@ export function requiresApprovalBeforeDispatch(
   return approval?.status !== 'granted';
 }
 
+export function isRetryBudgetExhausted(input: {
+  attemptsConsumed: number;
+  attemptBudget: number;
+}): boolean {
+  return input.attemptsConsumed >= Math.max(input.attemptBudget, 0);
+}
+
+export function shouldWithholdForNoNewCausalInput(input: {
+  currentSignature: DispatchSignature;
+  previousSignature?: DispatchSignature;
+}): boolean {
+  if (!input.previousSignature) {
+    return false;
+  }
+
+  return !hasNewCausalInput(input.previousSignature, input.currentSignature);
+}
+
 export function mapTaskResultToWorkItemStatus(input: {
   resultStatus:
     | 'valid_success'
@@ -119,6 +159,8 @@ export function mapTaskResultToWorkItemStatus(input: {
     | 'transient_failure'
     | 'permanent_failure'
     | 'cancelled';
+  attemptsConsumed?: number;
+  attemptBudget?: number;
 }): {
   workItemStatus: WorkItemStatus;
   blockingReason?: string;
@@ -127,6 +169,20 @@ export function mapTaskResultToWorkItemStatus(input: {
     case 'valid_success':
       return { workItemStatus: 'completed' };
     case 'transient_failure':
+      if (
+        typeof input.attemptsConsumed === 'number' &&
+        typeof input.attemptBudget === 'number' &&
+        isRetryBudgetExhausted({
+          attemptsConsumed: input.attemptsConsumed,
+          attemptBudget: input.attemptBudget,
+        })
+      ) {
+        return {
+          workItemStatus: 'blocked',
+          blockingReason: 'attempt_budget_exhausted',
+        };
+      }
+
       return {
         workItemStatus: 'ready',
         blockingReason: 'retry_available',
@@ -155,11 +211,14 @@ export function createDispatchDecision(input: {
   currentSignature: DispatchSignature;
   previousSignature?: DispatchSignature;
   hasScopeConflict?: boolean;
+  attemptsConsumed?: number;
+  escalateOnNoNewCausalInput?: boolean;
 }): DispatchDecision {
   if (requiresApprovalBeforeDispatch(input.workItem, input.approval)) {
     return {
       status: 'withheld_missing_approval',
       workItemId: input.workItem.workItemId,
+      blockingReason: 'approval_required',
     };
   }
 
@@ -167,16 +226,42 @@ export function createDispatchDecision(input: {
     return {
       status: 'withheld_scope_conflict',
       workItemId: input.workItem.workItemId,
+      blockingReason: 'scope_conflict',
     };
   }
 
   if (
-    input.previousSignature &&
-    !hasNewCausalInput(input.previousSignature, input.currentSignature)
+    typeof input.attemptsConsumed === 'number' &&
+    isRetryBudgetExhausted({
+      attemptsConsumed: input.attemptsConsumed,
+      attemptBudget: input.workItem.attemptBudget,
+    })
   ) {
+    return {
+      status: 'withheld_retry_budget_exhausted',
+      workItemId: input.workItem.workItemId,
+      blockingReason: 'attempt_budget_exhausted',
+    };
+  }
+
+  if (
+    shouldWithholdForNoNewCausalInput({
+      currentSignature: input.currentSignature,
+      previousSignature: input.previousSignature,
+    })
+  ) {
+    if (input.escalateOnNoNewCausalInput) {
+      return {
+        status: 'escalated',
+        workItemId: input.workItem.workItemId,
+        blockingReason: 'no_new_causal_input',
+      };
+    }
+
     return {
       status: 'withheld_no_new_causal_input',
       workItemId: input.workItem.workItemId,
+      blockingReason: 'no_new_causal_input',
     };
   }
 

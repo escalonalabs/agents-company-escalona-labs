@@ -58,6 +58,36 @@
       "body": "Outcome:\\nConvert the repository from docs-only into a runnable monorepo with real apps, packages, Docker Compose, env templates, and code CI.\\n\\nValidation:\\nA fresh clone can install, boot local dependencies, compile the app/server/package graph, and run baseline tests without hidden steps."
     },
     {
+      "key": "AC-811",
+      "title": "Restore workspace typecheck parity and package source integrity",
+      "milestone": "M8 Buildable Foundation",
+      "labels": [
+        "type:infra",
+        "area:foundation",
+        "P0",
+        "size:S",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": [],
+      "body": "Outcome:\\nMake every workspace package referenced by the root scripts either typecheckable from real source files or explicitly excluded from the workspace graph.\\n\\nValidation:\\n`pnpm typecheck` passes locally and in CI with no package failing from missing inputs or broken workspace configuration."
+    },
+    {
+      "key": "AC-812",
+      "title": "Add a fresh-clone smoke gate for the documented bootstrap path",
+      "milestone": "M8 Buildable Foundation",
+      "labels": [
+        "type:test",
+        "area:foundation",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-811"],
+      "body": "Outcome:\\nAdd one smoke path that follows the documented README bootstrap flow instead of relying on tribal setup knowledge.\\n\\nValidation:\\nA scripted smoke run proves the documented install, migrate, seed, build, and test path on a fresh local stack."
+    },
+    {
       "key": "AC-901",
       "title": "Deliver M9 Domain and Kernel Runtime v1",
       "milestone": "M9 Domain and Kernel Runtime v1",
@@ -73,6 +103,36 @@
       "body": "Outcome:\\nImplement the first real deterministic kernel, ledger persistence, reducer, replay flow, and projection seed over the canonical domain model.\\n\\nValidation:\\nGolden traces execute against real kernel code and the historical loop class is covered by replay tests."
     },
     {
+      "key": "AC-911",
+      "title": "Execute golden traces against the real kernel reducer",
+      "milestone": "M9 Domain and Kernel Runtime v1",
+      "labels": [
+        "type:test",
+        "area:kernel",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-811"],
+      "body": "Outcome:\\nReplace the contract-only replay gate with a harness that loads the golden fixtures and drives the real kernel reducer and replay code.\\n\\nValidation:\\nCI fails when fixture data no longer reproduces the expected runtime behavior under the real replay engine."
+    },
+    {
+      "key": "AC-912",
+      "title": "Assert exact replay outputs, projection rebuilds, and loop invariants",
+      "milestone": "M9 Domain and Kernel Runtime v1",
+      "labels": [
+        "type:test",
+        "area:kernel",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-911"],
+      "body": "Outcome:\\nExtend the replay harness to assert exact aggregate state, event diffs, projection rebuild results, and the known loop-prevention invariants.\\n\\nValidation:\\nThe approval, retry, claim-expiry, drift, and known-loop scenarios all fail closed when runtime behavior drifts from the expected outputs."
+    },
+    {
       "key": "AC-1001",
       "title": "Deliver M10 Orchestration and Execution Plane v1",
       "milestone": "M10 Orchestration and Execution Plane v1",
@@ -86,6 +146,96 @@
       ],
       "depends_on": ["AC-901"],
       "body": "Outcome:\\nImplement planning, scheduling, leases, retries, execution packets, validators, workers, and the first bounded tool pack.\\n\\nValidation:\\nAn objective can become a work item, dispatch to a worker, validate output, and end in complete, blocked, or escalated state."
+    },
+    {
+      "key": "AC-1002",
+      "title": "Persist claim leases and enforce exclusive scope ownership",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:feature",
+        "area:orchestration",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-912"],
+      "body": "Outcome:\\nImplement persisted claim lease storage, acquisition, expiry, and projection rules so exclusive scope ownership is enforced by runtime truth instead of ad hoc work-item lookups.\\n\\nValidation:\\nTwo competing work items cannot hold the same exclusive scope, and lease expiry emits explicit events that drive the next scheduler decision."
+    },
+    {
+      "key": "AC-1003",
+      "title": "Implement deterministic retry scheduling and withholding semantics",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:feature",
+        "area:orchestration",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1002"],
+      "body": "Outcome:\\nImplement ready, retry, and escalation scheduling with deterministic backoff, retry-budget exhaustion, and explicit withheld dispatch reasons.\\n\\nValidation:\\nTransient failures create new attempts and new packets when eligible, while exhausted retry budgets and no-new-causal-input cases escalate instead of spinning."
+    },
+    {
+      "key": "AC-1004",
+      "title": "Ship the worker runtime and Postgres-backed run queue",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1003"],
+      "body": "Outcome:\\nIntroduce a dedicated worker runtime that dequeues runs from Postgres, executes frozen packets, and records results without manual control-plane completion calls.\\n\\nValidation:\\nThe happy path can dispatch, execute, validate, and settle a run end to end with no human POST to `/runs/:runId/complete`."
+    },
+    {
+      "key": "AC-1005",
+      "title": "Implement bounded HTTP, file, and internal executors",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1004"],
+      "body": "Outcome:\\nImplement the first policy-aware executors for HTTP, file and artifact operations, and internal control actions, all returning typed effect envelopes.\\n\\nValidation:\\nAllowed operations execute through the worker, out-of-policy calls fail closed, and every effect is captured as auditable execution output."
+    },
+    {
+      "key": "AC-1006",
+      "title": "Implement bounded shell and browser executors",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1005"],
+      "body": "Outcome:\\nImplement bounded shell and browser executors with frozen working directory, environment, and domain policies that the worker can invoke through the same effect contract.\\n\\nValidation:\\nShell and browser actions run only within the declared packet policy and emit typed, reviewable results and evidence artifacts."
+    },
+    {
+      "key": "AC-1007",
+      "title": "Add end-to-end runtime smoke and failure-path tests",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:test",
+        "area:runtime",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1004", "AC-1005", "AC-1006"],
+      "body": "Outcome:\\nAdd end-to-end smoke coverage for success, invalid output, transient failure, retry, and claim-conflict paths over the real worker and executor stack.\\n\\nValidation:\\nThe system proves objective-to-terminal-state behavior under both happy and failure paths, and the historical no-op loop class remains blocked by test."
     },
     {
       "key": "AC-1101",

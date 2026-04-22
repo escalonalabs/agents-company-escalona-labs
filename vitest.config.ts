@@ -21,7 +21,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['packages/**/*.test.ts'],
+    include: ['packages/**/*.test.ts', 'server/control-plane/**/*.test.ts'],
     environment: 'node',
   },
 });

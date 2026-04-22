@@ -1,0 +1,26 @@
+FROM node:20-alpine AS build
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
+
+WORKDIR /workspace
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages ./packages
+COPY server ./server
+
+RUN pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+RUN pnpm -r --filter "./packages/*" --filter @escalonalabs/control-plane run build
+
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=build /workspace /app
+
+EXPOSE 3000
+
+CMD ["node", "server/control-plane/dist/server.js"]

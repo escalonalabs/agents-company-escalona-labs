@@ -1,6 +1,7 @@
 import type {
   AggregateType,
   ApprovalDecision,
+  ClaimLease,
   Company,
   DomainEvent,
   DomainEventType,
@@ -80,7 +81,37 @@ export function orderEventsForReplay(events: DomainEvent[]): DomainEvent[] {
       }
     }
 
-    return left.occurredAt.localeCompare(right.occurredAt);
+    const occurredAtComparison = left.occurredAt.localeCompare(
+      right.occurredAt,
+    );
+    if (occurredAtComparison !== 0) {
+      return occurredAtComparison;
+    }
+
+    const companyComparison = left.companyId.localeCompare(right.companyId);
+    if (companyComparison !== 0) {
+      return companyComparison;
+    }
+
+    const aggregateTypeComparison = left.aggregateType.localeCompare(
+      right.aggregateType,
+    );
+    if (aggregateTypeComparison !== 0) {
+      return aggregateTypeComparison;
+    }
+
+    const aggregateIdComparison = left.aggregateId.localeCompare(
+      right.aggregateId,
+    );
+    if (aggregateIdComparison !== 0) {
+      return aggregateIdComparison;
+    }
+
+    if (leftSequence !== rightSequence) {
+      return leftSequence - rightSequence;
+    }
+
+    return left.eventId.localeCompare(right.eventId);
   });
 }
 
@@ -90,9 +121,10 @@ export function replayAggregate(
   return replay(orderEventsForReplay(events));
 }
 
-export function createCompanyCreatedEvent(input: {
+export function createCompanyEvent(input: {
   company: Company;
   eventId: string;
+  eventType: 'company.created' | 'company.updated';
   streamSequence: number;
   commandId: string;
   idempotencyKey: string;
@@ -104,8 +136,8 @@ export function createCompanyCreatedEvent(input: {
     aggregateType: 'company',
     aggregateId: input.company.companyId,
     companyId: input.company.companyId,
-    eventType: 'company.created',
-    occurredAt: input.company.createdAt,
+    eventType: input.eventType,
+    occurredAt: input.company.betaUpdatedAt ?? input.company.createdAt,
     payload: input.company,
     streamSequence: input.streamSequence,
     commandId: input.commandId,
@@ -113,6 +145,15 @@ export function createCompanyCreatedEvent(input: {
     correlationId: input.correlationId,
     causationKey: input.idempotencyKey,
     causationId: input.commandId,
+  });
+}
+
+export function createCompanyCreatedEvent(
+  input: Omit<Parameters<typeof createCompanyEvent>[0], 'eventType'>,
+): DomainEvent<Company> {
+  return createCompanyEvent({
+    ...input,
+    eventType: 'company.created',
   });
 }
 
@@ -243,6 +284,33 @@ export function createApprovalEvent(input: {
     eventType: input.eventType,
     occurredAt: input.approval.updatedAt,
     payload: input.approval,
+    streamSequence: input.streamSequence,
+    commandId: input.commandId,
+    idempotencyKey: input.idempotencyKey,
+    actorRef: input.actorRef,
+    correlationId: input.correlationId,
+  });
+}
+
+export function createClaimEvent(input: {
+  claim: ClaimLease;
+  eventId: string;
+  eventType: 'claim.acquired' | 'claim.expired';
+  streamSequence: number;
+  occurredAt: string;
+  commandId: string;
+  idempotencyKey: string;
+  actorRef?: string;
+  correlationId?: string;
+}): DomainEvent<ClaimLease> {
+  return createAggregateSnapshotEvent({
+    eventId: input.eventId,
+    aggregateType: 'claim',
+    aggregateId: input.claim.claimId,
+    companyId: input.claim.companyId,
+    eventType: input.eventType,
+    occurredAt: input.occurredAt,
+    payload: input.claim,
     streamSequence: input.streamSequence,
     commandId: input.commandId,
     idempotencyKey: input.idempotencyKey,

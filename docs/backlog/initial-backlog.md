@@ -69,14 +69,24 @@
 
 ## M8 Buildable Foundation
 
+- `AC-811` Restore workspace typecheck parity and package source integrity
+- `AC-812` Add a fresh-clone smoke gate for the documented bootstrap path
 - `AC-801` Deliver M8 Buildable Foundation
 
 ## M9 Domain and Kernel Runtime v1
 
+- `AC-911` Execute golden traces against the real kernel reducer
+- `AC-912` Assert exact replay outputs, projection rebuilds, and loop invariants
 - `AC-901` Deliver M9 Domain and Kernel Runtime v1
 
 ## M10 Orchestration and Execution Plane v1
 
+- `AC-1002` Persist claim leases and enforce exclusive scope ownership
+- `AC-1003` Implement deterministic retry scheduling and withholding semantics
+- `AC-1004` Ship the worker runtime and Postgres-backed run queue
+- `AC-1005` Implement bounded HTTP, file, and internal executors
+- `AC-1006` Implement bounded shell and browser executors
+- `AC-1007` Add end-to-end runtime smoke and failure-path tests
 - `AC-1001` Deliver M10 Orchestration and Execution Plane v1
 
 ## M11 GitHub Backbone Runtime

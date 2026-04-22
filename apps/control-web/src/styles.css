@@ -38,6 +38,10 @@ select {
   padding: 4rem 0 5rem;
 }
 
+.app-shell--gate {
+  width: min(880px, calc(100vw - 2rem));
+}
+
 .hero {
   max-width: 760px;
   margin-bottom: 2rem;
@@ -127,6 +131,14 @@ select {
   gap: 0.45rem;
 }
 
+.toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
 .toolbar__dot {
   width: 0.3rem;
   height: 0.3rem;
@@ -135,6 +147,9 @@ select {
 }
 
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-radius: 999px;
   padding: 0.75rem 1rem;
@@ -143,10 +158,32 @@ select {
   background: linear-gradient(135deg, #17355f, #356fa8);
   cursor: pointer;
   box-shadow: 0 18px 28px -22px rgba(23, 53, 95, 0.75);
+  text-decoration: none;
 }
 
 .button:hover {
   filter: brightness(1.05);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  filter: none;
+  box-shadow: none;
+}
+
+.button--ghost {
+  color: #17355f;
+  background: rgba(23, 53, 95, 0.08);
+  border: 1px solid rgba(23, 53, 95, 0.12);
+}
+
+.button--danger {
+  background: linear-gradient(135deg, #8d1f34, #c53b55);
+}
+
+.button--link {
+  text-decoration: none;
 }
 
 .card-row {
@@ -228,6 +265,40 @@ select {
   line-height: 1;
 }
 
+.form-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field__label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(23, 53, 95, 0.82);
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(53, 111, 168, 0.18);
+  border-radius: 0.95rem;
+  background: rgba(245, 250, 255, 0.9);
+  color: #17355f;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: 2px solid rgba(113, 201, 255, 0.34);
+  border-color: rgba(53, 111, 168, 0.4);
+}
+
 .chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -270,6 +341,10 @@ select {
   gap: 0.8rem;
 }
 
+.stack-list--compact {
+  margin-top: 0.8rem;
+}
+
 .stack-item {
   display: grid;
   gap: 0.45rem;
@@ -289,6 +364,121 @@ select {
 .stack-item__meta {
   color: rgba(23, 53, 95, 0.62);
   font-size: 0.82rem;
+}
+
+.stack-button {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 200px;
+  padding: 0.95rem 1rem;
+  text-align: left;
+  border: 1px solid rgba(53, 111, 168, 0.16);
+  border-radius: 1rem;
+  background: rgba(245, 250, 255, 0.88);
+  color: inherit;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms
+    ease;
+}
+
+.stack-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(53, 111, 168, 0.28);
+  box-shadow: 0 16px 28px -24px rgba(23, 53, 95, 0.46);
+}
+
+.stack-button--active {
+  border-color: rgba(23, 53, 95, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(23, 53, 95, 0.96),
+    rgba(53, 111, 168, 0.9)
+  );
+  color: #eef6fb;
+}
+
+.stack-button--active .muted,
+.stack-button--active .stack-item__meta {
+  color: rgba(238, 246, 251, 0.82);
+}
+
+.stack-button--detail {
+  width: 100%;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.detail-grid__section {
+  display: grid;
+  gap: 0.9rem;
+  align-content: start;
+}
+
+.detail-list {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(53, 111, 168, 0.12);
+  background: rgba(245, 250, 255, 0.86);
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.inline-actions--top {
+  margin-top: 1rem;
+}
+
+.checklist {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.checklist-item {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(53, 111, 168, 0.12);
+  background: rgba(245, 250, 255, 0.82);
+}
+
+.approval-panel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(53, 111, 168, 0.16);
+  background: rgba(238, 246, 251, 0.86);
+}
+
+.timeline-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.timeline-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(53, 111, 168, 0.12);
+  background: rgba(245, 250, 255, 0.82);
+}
+
+.timeline-item__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .status-card {
@@ -323,7 +513,17 @@ select {
     align-items: flex-start;
   }
 
+  .toolbar__actions,
+  .inline-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .company-chip {
+    width: 100%;
+  }
+
+  .stack-button {
     width: 100%;
   }
 }

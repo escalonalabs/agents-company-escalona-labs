@@ -20,6 +20,9 @@ const company: Company = {
   slug: 'escalona-labs',
   displayName: 'Escalona Labs',
   status: 'active',
+  betaPhase: 'internal_alpha',
+  betaEnrollmentStatus: 'active',
+  betaUpdatedAt: '2026-04-22T00:00:00Z',
   createdAt: '2026-04-22T00:00:00Z',
 };
 
@@ -121,6 +124,40 @@ describe('kernel replay', () => {
     expect(state.companies[company.companyId]?.displayName).toBe(
       'Escalona Labs',
     );
+  });
+
+  it('replaces company snapshots when company.updated arrives', () => {
+    const updatedCompany: Company = {
+      ...company,
+      betaPhase: 'controlled_beta',
+      betaEnrollmentStatus: 'active',
+      betaNotes: 'Approved for external beta.',
+      betaUpdatedAt: '2026-04-22T01:00:00Z',
+    };
+
+    const state = replay([
+      {
+        eventId: 'evt_company_created',
+        aggregateType: 'company',
+        aggregateId: company.companyId,
+        companyId: company.companyId,
+        eventType: 'company.created',
+        occurredAt: company.createdAt,
+        payload: company,
+      },
+      {
+        eventId: 'evt_company_updated',
+        aggregateType: 'company',
+        aggregateId: company.companyId,
+        companyId: company.companyId,
+        eventType: 'company.updated',
+        occurredAt: updatedCompany.betaUpdatedAt ?? company.createdAt,
+        payload: updatedCompany,
+      },
+    ]);
+
+    expect(state.companies[company.companyId]).toEqual(updatedCompany);
+    expect(state.lastEventId).toBe('evt_company_updated');
   });
 });
 

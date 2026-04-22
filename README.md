@@ -43,7 +43,8 @@ pnpm install
 cp .env.example .env.local
 ```
 
-3. Boot local dependencies:
+3. Boot local dependencies. The local Postgres port is intentionally mapped to
+   `55432` so it does not collide with other stacks already using `5432`:
 
 ```bash
 pnpm dev:stack
@@ -61,6 +62,34 @@ pnpm db:seed
 ```bash
 pnpm dev
 ```
+
+## Local Self-Hosted Stack
+
+The repository now includes a minimal self-hosted packaging path that keeps the
+runtime code unchanged and runs the product surfaces in containers:
+
+- `control-plane`
+- `github-app`
+- `control-web`
+- local dependencies for `postgres`, `minio`, and `mailpit`
+
+Start the stack:
+
+```bash
+docker compose up --build -d
+```
+
+Open:
+
+- `http://localhost:8080` for the operator UI
+- `http://localhost:3000/health` for the control-plane health endpoint
+- `http://localhost:3001/health` for the GitHub App health endpoint
+- `http://localhost:8025` for Mailpit
+- `http://localhost:9001` for the MinIO console
+
+For the first bootstrapped operator and first company flow, plus the required
+environment variables and Helm foundation, see
+[docs/operations/self-hosted.md](docs/operations/self-hosted.md).
 
 ## Validation
 

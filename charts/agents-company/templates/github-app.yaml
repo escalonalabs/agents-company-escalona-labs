@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agents-company.githubAppName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: github-app
+  {{- with .Values.githubApp.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    {{- include "agents-company.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: github-app
+  ports:
+    - name: http
+      port: {{ .Values.githubApp.service.port }}
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agents-company.githubAppName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: github-app
+spec:
+  {{- if not .Values.githubApp.autoscaling.enabled }}
+  replicas: {{ .Values.githubApp.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "agents-company.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: github-app
+  template:
+    metadata:
+      labels:
+        {{- include "agents-company.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: github-app
+      {{- with .Values.githubApp.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "agents-company.githubAppServiceAccountName" . }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . | quote }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.githubApp.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.githubApp.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.githubApp.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.githubApp.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: github-app
+          image: "{{ .Values.githubApp.image.repository }}:{{ .Values.githubApp.image.tag }}"
+          imagePullPolicy: {{ .Values.githubApp.image.pullPolicy }}
+          env:
+            - name: AGENTS_COMPANY_GITHUB_APP_PORT
+              value: {{ .Values.githubApp.service.port | quote }}
+            - name: AGENTS_COMPANY_CONTROL_PLANE_URL
+              value: http://{{ include "agents-company.controlPlaneName" . }}:{{ .Values.controlPlane.service.port }}
+          envFrom:
+            - secretRef:
+                name: {{ include "agents-company.runtimeSecretRefName" . }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.githubApp.service.port }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.githubApp.resources | nindent 12 }}

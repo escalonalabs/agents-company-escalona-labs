@@ -183,6 +183,7 @@ export async function listDomainEvents(
     aggregateType?: DomainEvent['aggregateType'];
     aggregateId?: string;
     limit?: number;
+    order?: 'asc' | 'desc';
   } = {},
 ): Promise<DomainEvent[]> {
   const clauses: string[] = [];
@@ -206,6 +207,7 @@ export async function listDomainEvents(
   values.push(filters.limit ?? 100);
   const whereClause =
     clauses.length > 0 ? `where ${clauses.join(' and ')}` : '';
+  const orderDirection = filters.order === 'desc' ? 'desc' : 'asc';
 
   const result = await db.query<LedgerEventRow>(
     `
@@ -226,7 +228,7 @@ export async function listDomainEvents(
         payload
       from ledger_events
       ${whereClause}
-      order by occurred_at asc, stream_sequence asc
+      order by occurred_at ${orderDirection}, stream_sequence ${orderDirection}
       limit $${values.length}
     `,
     values,

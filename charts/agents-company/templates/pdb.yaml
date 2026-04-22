@@ -1,0 +1,47 @@
+{{- if .Values.controlPlane.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "agents-company.controlPlaneName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: control-plane
+spec:
+  minAvailable: {{ .Values.controlPlane.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "agents-company.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: control-plane
+---
+{{- end }}
+{{- if .Values.githubApp.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "agents-company.githubAppName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: github-app
+spec:
+  minAvailable: {{ .Values.githubApp.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "agents-company.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: github-app
+---
+{{- end }}
+{{- if .Values.controlWeb.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "agents-company.controlWebName" . }}
+  labels:
+    {{- include "agents-company.labels" . | nindent 4 }}
+    app.kubernetes.io/component: control-web
+spec:
+  minAvailable: {{ .Values.controlWeb.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "agents-company.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: control-web
+{{- end }}
