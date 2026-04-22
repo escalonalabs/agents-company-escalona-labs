@@ -2,6 +2,7 @@
   "name": "agents-company",
   "version": "0.0.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "packageManager": "pnpm@10.28.2",
   "engines": {
@@ -12,4 +13,3 @@
     "check:repo": "python3 .github/scripts/repo_guardrails.py"
   }
 }
-

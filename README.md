@@ -36,3 +36,11 @@ pnpm check:repo
 ## Security
 
 See [SECURITY.md](SECURITY.md) for reporting guidance.
+
+## License
+
+This repository is public source-available code under the `Escalona Labs Public Source License 1.0`.
+
+- Commercial use is prohibited without prior written permission from Escalona Labs
+- Repository visibility does not grant product, trademark, or hosting rights
+- See [LICENSE](LICENSE) and [docs/operations/licensing-and-commercial-use.md](docs/operations/licensing-and-commercial-use.md)
