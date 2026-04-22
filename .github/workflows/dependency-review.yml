@@ -13,22 +13,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Detect dependency manifests
+      - name: Detect pnpm lockfile
         id: detect
         run: |
-          if find . \
-            \( -name 'pnpm-lock.yaml' -o -name 'package-lock.json' -o -name 'yarn.lock' -o -name 'bun.lockb' -o -name 'go.mod' -o -name 'Cargo.lock' -o -name 'poetry.lock' -o -name 'requirements*.txt' \) \
-            -not -path './.git/*' \
-            | grep -q .; then
-            echo "has_manifests=true" >> "$GITHUB_OUTPUT"
+          if [[ -f pnpm-lock.yaml ]]; then
+            echo "has_pnpm_lock=true" >> "$GITHUB_OUTPUT"
           else
-            echo "has_manifests=false" >> "$GITHUB_OUTPUT"
+            echo "has_pnpm_lock=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Skip until manifests exist
-        if: steps.detect.outputs.has_manifests != 'true'
-        run: echo "No dependency manifests are present yet; dependency review is deferred."
+      - name: Skip until pnpm lockfile exists
+        if: steps.detect.outputs.has_pnpm_lock != 'true'
+        run: echo "No pnpm lockfile is present yet; dependency audit is deferred."
 
-      - name: Dependency review
-        if: steps.detect.outputs.has_manifests == 'true'
-        uses: actions/dependency-review-action@v4
+      - name: Setup pnpm
+        if: steps.detect.outputs.has_pnpm_lock == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        if: steps.detect.outputs.has_pnpm_lock == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.detect.outputs.has_pnpm_lock == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies
+        if: steps.detect.outputs.has_pnpm_lock == 'true'
+        run: pnpm audit --audit-level high
