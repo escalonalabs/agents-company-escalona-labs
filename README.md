@@ -1,6 +1,6 @@
 # Agents Company by Escalona Labs
 
-Agents Company is a clean-room rebuild for a GitHub-first company-of-agents platform.
+Agents Company is a company-of-agents platform.
 
 ## What this repository contains today
 
