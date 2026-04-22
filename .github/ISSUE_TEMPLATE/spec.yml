@@ -1,0 +1,34 @@
+name: Spec Task
+description: Capture an architecture, contract, or design task.
+title: "[Spec] "
+labels:
+  - type:spec
+body:
+  - type: input
+    id: key
+    attributes:
+      label: Task Key
+      placeholder: AC-000
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: expected_output
+    attributes:
+      label: Expected Output
+      description: Document, schema, ADR, or contract pack to be produced.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: How will we know this task is complete?
+    validations:
+      required: true
+

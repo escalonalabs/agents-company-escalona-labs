@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Delivery Operating Model
+    url: ./docs/operations/github-first-delivery.md
+    about: Start here before opening ad-hoc work.
+

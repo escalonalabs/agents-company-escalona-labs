@@ -1,0 +1,28 @@
+name: Epic
+description: Create a milestone-sized delivery container.
+title: "[Epic] "
+labels:
+  - type:epic
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: Describe the milestone-sized result this epic should deliver.
+    validations:
+      required: true
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Definition of Done
+      description: List the conditions that make this epic complete.
+    validations:
+      required: true
+  - type: textarea
+    id: child_work
+    attributes:
+      label: Child Work
+      description: List the issue keys or titles expected to roll into this epic.
+    validations:
+      required: true
+

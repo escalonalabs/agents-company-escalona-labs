@@ -1,0 +1,15 @@
+{
+  "name": "agents-company",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "check:repo": "python3 .github/scripts/repo_guardrails.py"
+  }
+}
+
