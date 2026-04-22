@@ -104,6 +104,15 @@ Primary references:
 - [docs/operations/hosted-aws.md](docs/operations/hosted-aws.md)
 - [infra/aws/README.md](infra/aws/README.md)
 
+## GA Operations
+
+The repository now includes the explicit `M17` operating discipline for general
+availability:
+
+- [docs/operations/ga-runbook.md](docs/operations/ga-runbook.md)
+- [docs/operations/release-train.md](docs/operations/release-train.md)
+- [docs/operations/support-and-oncall.md](docs/operations/support-and-oncall.md)
+
 ## Validation
 
 Run the repository guardrails locally:
