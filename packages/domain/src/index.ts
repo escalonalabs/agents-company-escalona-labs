@@ -27,6 +27,13 @@ export type RunStatus =
   | 'permanent_failure'
   | 'cancelled';
 export type ApprovalStatus = 'pending' | 'granted' | 'denied' | 'expired';
+export type AggregateType =
+  | 'company'
+  | 'objective'
+  | 'work_item'
+  | 'run'
+  | 'approval'
+  | 'claim';
 export type DomainEventType =
   | 'company.created'
   | 'objective.created'
@@ -126,19 +133,30 @@ export interface ClaimLease {
 
 export interface DomainEvent<TPayload = unknown> {
   eventId: string;
-  aggregateType:
-    | 'company'
-    | 'objective'
-    | 'work_item'
-    | 'run'
-    | 'approval'
-    | 'claim';
+  aggregateType: AggregateType;
   aggregateId: string;
   companyId: string;
   eventType: DomainEventType;
+  schemaVersion?: number;
+  streamSequence?: number;
   occurredAt: string;
   payload: TPayload;
+  actorRef?: string;
+  commandId?: string;
+  correlationId?: string;
+  causationId?: string;
   causationKey?: string;
+}
+
+export interface CommandLogEntry {
+  commandId: string;
+  companyId: string;
+  aggregateId: string;
+  commandType: string;
+  idempotencyKey: string;
+  receivedAt: string;
+  resolutionStatus: 'accepted' | 'duplicate';
+  resultEventIds: string[];
 }
 
 export interface AggregateState {
