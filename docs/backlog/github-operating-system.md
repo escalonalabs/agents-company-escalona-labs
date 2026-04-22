@@ -73,3 +73,14 @@
 - `M6`: operator-facing API and UI surfaces are defined
 - `M7`: alpha release path is observable, reviewable, and reversible
 
+## Bootstrap rules
+
+- `.github/scripts/bootstrap_github.py` seeds and repairs labels, milestones, and issue metadata
+- Existing issue labels are preserved by default when syncing issues so live workflow state is not overwritten
+- `--sync-issue-labels` is an explicit repair mode and should only be used when intentionally resetting issue labels to the seeded baseline
+- `--delete-default-labels` and `--protect-main` are explicit operations and do not trigger a full backlog reseed on their own
+
+## Known external blocker
+
+- Branch protection for `main` on a private repository requires a GitHub plan that supports protected branches on private repos
+- If the current plan does not support that capability, the bootstrap script fails closed with a clear error instead of silently skipping protection
