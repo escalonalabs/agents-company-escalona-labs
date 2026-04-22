@@ -47,6 +47,30 @@ def ensure_label(repo: str, label: dict) -> None:
         )
 
 
+def delete_default_labels(repo: str) -> None:
+    default_labels = [
+        "bug",
+        "documentation",
+        "duplicate",
+        "enhancement",
+        "good first issue",
+        "help wanted",
+        "invalid",
+        "question",
+        "wontfix",
+    ]
+    for label in default_labels:
+        completed = subprocess.run(
+            ["gh", "label", "delete", label, "--repo", repo, "--yes"],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode not in (0, 1):
+            raise RuntimeError(f"Failed deleting label {label}:\n{completed.stderr.strip()}")
+
+
 def milestone_number_by_title(repo: str, state: str = "all") -> dict[str, int]:
     output = gh("api", f"repos/{repo}/milestones?state={state}&per_page=100")
     milestones = json.loads(output)
@@ -208,13 +232,29 @@ def protect_main_with_curl_style(repo: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True, help="owner/name")
+    parser.add_argument("--apply", action="store_true", help="Apply repository mutations instead of printing the plan")
     parser.add_argument("--protect-main", action="store_true")
+    parser.add_argument("--delete-default-labels", action="store_true")
     args = parser.parse_args()
 
     seed = load_seed()
 
+    if not args.apply:
+        print(f"Plan for {args.repo}")
+        print(f"- labels: {len(seed['labels'])}")
+        print(f"- milestones: {len(seed['milestones'])}")
+        print(f"- issues: {len(seed['issues'])}")
+        if args.protect_main:
+            print("- branch protection: requested")
+        if args.delete_default_labels:
+            print("- default labels: delete requested")
+        return 0
+
     for label in seed["labels"]:
         ensure_label(args.repo, label)
+
+    if args.delete_default_labels:
+        delete_default_labels(args.repo)
 
     milestone_numbers: dict[str, int] = {}
     for milestone in seed["milestones"]:
@@ -232,4 +272,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

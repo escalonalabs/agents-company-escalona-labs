@@ -33,3 +33,6 @@ Run the repository guardrails locally:
 pnpm check:repo
 ```
 
+## Security
+
+See [SECURITY.md](SECURITY.md) for reporting guidance.
