@@ -182,5 +182,12 @@ jobs:
       - name: Self-hosted compose smoke
         run: pnpm smoke:self-hosted
 
+      - name: Boot default compose stack for recovery drill
+        run: docker compose up --build -d
+
       - name: Compose recovery drill
         run: pnpm ops:drill:compose-recovery
+
+      - name: Shut down default compose stack
+        if: always()
+        run: docker compose down -v
