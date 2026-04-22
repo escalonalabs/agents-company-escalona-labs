@@ -1,0 +1,52 @@
+{
+  "trace_id": "kernel/approval-denied/v1",
+  "schema_version": 1,
+  "scenario_name": "approval_denied",
+  "seed_state": {
+    "objective_id": "obj_approval_002",
+    "objective_status": "planned"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_denied_001",
+      "type": "work_item.dispatch",
+      "issued_at": "2026-04-22T00:20:00Z"
+    },
+    {
+      "command_id": "cmd_denied_002",
+      "type": "approval.deny",
+      "issued_at": "2026-04-22T00:21:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_denied_001",
+      "type": "approval.requested",
+      "occurred_at": "2026-04-22T00:20:02Z"
+    },
+    {
+      "event_id": "evt_denied_002",
+      "type": "approval.denied",
+      "occurred_at": "2026-04-22T00:21:00Z"
+    },
+    {
+      "event_id": "evt_denied_003",
+      "type": "work_item.blocked",
+      "occurred_at": "2026-04-22T00:21:01Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "approval_status": "denied",
+    "work_item_status": "blocked",
+    "run_status": "not_started"
+  },
+  "expected_projection_state": {
+    "pending_approvals": 0,
+    "github_issue_state": "open",
+    "block_reason": "approval_denied"
+  },
+  "expected_invariants": [
+    "no_execution_after_denial",
+    "explicit_human_override_required_to_resume"
+  ]
+}

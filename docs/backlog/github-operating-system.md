@@ -118,5 +118,6 @@
 ## Branch protection status
 
 - `main` is protected with required pull requests, CODEOWNERS review, conversation resolution, and required checks
+- required checks are `repo-guardrails`, `dependency-review`, `secret-scan`, and `replay-regression`
 - The temporary private-repo blocker was resolved by making the repository public on `2026-04-22`
 - The bootstrap script still fails closed if protection cannot be applied in a future environment

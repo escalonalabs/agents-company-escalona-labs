@@ -1,0 +1,40 @@
+{
+  "trace_id": "kernel/projection-drift/v1",
+  "schema_version": 1,
+  "scenario_name": "projection_drift",
+  "seed_state": {
+    "objective_id": "obj_drift_001",
+    "objective_status": "in_progress"
+  },
+  "commands": [
+    {
+      "command_id": "cmd_drift_001",
+      "type": "projection.reconcile",
+      "issued_at": "2026-04-22T01:10:00Z"
+    }
+  ],
+  "expected_events": [
+    {
+      "event_id": "evt_drift_001",
+      "type": "projection.drift_detected",
+      "occurred_at": "2026-04-22T01:10:05Z"
+    },
+    {
+      "event_id": "evt_drift_002",
+      "type": "projection.rebuilt_from_ledger",
+      "occurred_at": "2026-04-22T01:10:20Z"
+    }
+  ],
+  "expected_terminal_aggregate_state": {
+    "projection_status": "healthy",
+    "objective_status": "in_progress"
+  },
+  "expected_projection_state": {
+    "drift_open": 0,
+    "last_successful_projection": "2026-04-22T01:10:20Z"
+  },
+  "expected_invariants": [
+    "runtime_ledger_is_authoritative",
+    "rebuild_restores_projection_without_mutating_runtime_truth"
+  ]
+}
