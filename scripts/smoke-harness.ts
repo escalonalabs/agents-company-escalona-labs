@@ -18,6 +18,8 @@ const DEFAULT_SESSION_SECRET = 'smoke-session-secret';
 const DEFAULT_NODE_ENV = 'development';
 const DEFAULT_SMTP_URL = 'smtp://localhost:1025';
 const DEFAULT_MAIL_FROM = 'Agents Company <no-reply@agents-company.local>';
+const DATABASE_READY_TIMEOUT_MS = 60_000;
+const DATABASE_RETRY_INTERVAL_MS = 2_000;
 
 function sanitizeIdentifier(value: string) {
   return value.replace(/[^a-z0-9_]+/gi, '_').toLowerCase();
@@ -43,6 +45,31 @@ function buildSchemaDatabaseUrl(schemaName: string) {
   return url.toString();
 }
 
+async function waitForDatabaseOperation<T>(
+  operationName: string,
+  run: () => Promise<T>,
+) {
+  const deadline = Date.now() + DATABASE_READY_TIMEOUT_MS;
+  let lastError: unknown;
+
+  while (Date.now() < deadline) {
+    try {
+      return await run();
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolve) =>
+        setTimeout(resolve, DATABASE_RETRY_INTERVAL_MS),
+      );
+    }
+  }
+
+  const suffix =
+    lastError instanceof Error ? ` Last error: ${lastError.message}` : '';
+  throw new Error(
+    `Timed out waiting for PostgreSQL during ${operationName}.${suffix}`,
+  );
+}
+
 export function expectStatus(
   actual: number,
   allowed: number[],
@@ -62,15 +89,18 @@ export function expectStatus(
 
 export async function provisionSmokeSchema(prefix: string) {
   const schemaName = createSchemaName(prefix);
-  const adminPool = new Pool({
-    connectionString: getAdminDatabaseUrl(),
-  });
+  await waitForDatabaseOperation('schema provisioning', async () => {
+    const adminPool = new Pool({
+      connectionString: getAdminDatabaseUrl(),
+    });
 
-  try {
-    await adminPool.query(`create schema if not exists "${schemaName}"`);
-  } finally {
-    await adminPool.end();
-  }
+    try {
+      await adminPool.query('select 1');
+      await adminPool.query(`create schema if not exists "${schemaName}"`);
+    } finally {
+      await adminPool.end().catch(() => undefined);
+    }
+  });
 
   return {
     schemaName,
@@ -79,15 +109,18 @@ export async function provisionSmokeSchema(prefix: string) {
 }
 
 export async function dropSmokeSchema(schemaName: string) {
-  const adminPool = new Pool({
-    connectionString: getAdminDatabaseUrl(),
-  });
+  await waitForDatabaseOperation('schema cleanup', async () => {
+    const adminPool = new Pool({
+      connectionString: getAdminDatabaseUrl(),
+    });
 
-  try {
-    await adminPool.query(`drop schema if exists "${schemaName}" cascade`);
-  } finally {
-    await adminPool.end();
-  }
+    try {
+      await adminPool.query('select 1');
+      await adminPool.query(`drop schema if exists "${schemaName}" cascade`);
+    } finally {
+      await adminPool.end().catch(() => undefined);
+    }
+  });
 }
 
 export async function applySmokeEnvironment(
