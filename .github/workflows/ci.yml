@@ -186,6 +186,8 @@ jobs:
         run: docker compose up --build -d
 
       - name: Compose recovery drill
+        env:
+          GITHUB_APP_EXPECTED_STATUS: degraded
         run: pnpm ops:drill:compose-recovery
 
       - name: Shut down default compose stack
