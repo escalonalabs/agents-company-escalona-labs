@@ -5,7 +5,9 @@
   "type": "module",
   "dependencies": {
     "@escalonalabs/domain": "workspace:*",
+    "@escalonalabs/execution": "workspace:*",
     "@escalonalabs/kernel": "workspace:*",
+    "@escalonalabs/orchestration": "workspace:*",
     "fastify": "^5.6.1",
     "pg": "^8.16.3"
   },

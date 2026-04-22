@@ -10,14 +10,16 @@ export type ObjectiveStatus =
   | 'planned'
   | 'in_progress'
   | 'completed'
-  | 'blocked';
+  | 'blocked'
+  | 'cancelled';
 export type WorkItemStatus =
   | 'planned'
   | 'ready'
   | 'running'
   | 'completed'
   | 'blocked'
-  | 'escalated';
+  | 'escalated'
+  | 'cancelled';
 export type RunStatus =
   | 'queued'
   | 'running'
@@ -37,12 +39,15 @@ export type AggregateType =
 export type DomainEventType =
   | 'company.created'
   | 'objective.created'
+  | 'objective.updated'
   | 'work_item.created'
+  | 'work_item.updated'
   | 'run.started'
   | 'run.completed'
   | 'run.failed'
+  | 'run.cancelled'
   | 'approval.requested'
-  | 'approval.decided'
+  | 'approval.updated'
   | 'claim.acquired'
   | 'claim.expired';
 
@@ -58,8 +63,10 @@ export interface Objective {
   objectiveId: string;
   companyId: string;
   title: string;
+  summary?: string;
   status: ObjectiveStatus;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface WorkItem {
@@ -67,8 +74,16 @@ export interface WorkItem {
   companyId: string;
   objectiveId: string;
   title: string;
+  description?: string;
   status: WorkItemStatus;
   attemptBudget: number;
+  requiresApproval: boolean;
+  validationContractRef: string;
+  scopeRef: string;
+  blockingReason?: string;
+  latestRunId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Run {
@@ -78,6 +93,10 @@ export interface Run {
   attempt: number;
   status: RunStatus;
   executionPacketId?: string;
+  summary?: string;
+  failureClass?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ApprovalDecision {
@@ -87,6 +106,8 @@ export interface ApprovalDecision {
   status: ApprovalStatus;
   requestedAction: string;
   decisionReason?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ArtifactRef {

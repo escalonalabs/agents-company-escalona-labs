@@ -2,7 +2,7 @@ import type { Pool, PoolClient } from 'pg';
 
 import type { CommandLogEntry, DomainEvent } from '@escalonalabs/domain';
 
-type Queryable = Pick<Pool, 'query'> | Pick<PoolClient, 'query'>;
+export type Queryable = Pick<Pool, 'query'> | Pick<PoolClient, 'query'>;
 
 interface LedgerEventRow {
   event_id: string;
@@ -12,7 +12,7 @@ interface LedgerEventRow {
   stream_sequence: number;
   event_type: DomainEvent['eventType'];
   schema_version: number;
-  occurred_at: string;
+  occurred_at: string | Date;
   actor_ref: string | null;
   command_id: string | null;
   correlation_id: string | null;
@@ -27,9 +27,13 @@ interface CommandLogRow {
   aggregate_id: string;
   command_type: string;
   idempotency_key: string;
-  received_at: string;
+  received_at: string | Date;
   resolution_status: CommandLogEntry['resolutionStatus'];
   result_event_ids: string[];
+}
+
+function normalizeTimestamp(value: string | Date): string {
+  return value instanceof Date ? value.toISOString() : value;
 }
 
 function toDomainEvent(row: LedgerEventRow): DomainEvent {
@@ -41,7 +45,7 @@ function toDomainEvent(row: LedgerEventRow): DomainEvent {
     streamSequence: row.stream_sequence,
     eventType: row.event_type,
     schemaVersion: row.schema_version,
-    occurredAt: row.occurred_at,
+    occurredAt: normalizeTimestamp(row.occurred_at),
     actorRef: row.actor_ref ?? undefined,
     commandId: row.command_id ?? undefined,
     correlationId: row.correlation_id ?? undefined,
@@ -131,7 +135,7 @@ export async function getCommandLogEntry(
     aggregateId: row.aggregate_id,
     commandType: row.command_type,
     idempotencyKey: row.idempotency_key,
-    receivedAt: row.received_at,
+    receivedAt: normalizeTimestamp(row.received_at),
     resolutionStatus: row.resolution_status,
     resultEventIds: row.result_event_ids,
   };

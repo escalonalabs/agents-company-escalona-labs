@@ -55,11 +55,13 @@ export function applyEvent(
       );
       return nextState;
     case 'objective.created':
+    case 'objective.updated':
       nextState.objectives[event.aggregateId] = asObjective(
         event.payload as Objective,
       );
       return nextState;
     case 'work_item.created':
+    case 'work_item.updated':
       nextState.workItems[event.aggregateId] = asWorkItem(
         event.payload as WorkItem,
       );
@@ -67,10 +69,11 @@ export function applyEvent(
     case 'run.started':
     case 'run.completed':
     case 'run.failed':
+    case 'run.cancelled':
       nextState.runs[event.aggregateId] = asRun(event.payload as Run);
       return nextState;
     case 'approval.requested':
-    case 'approval.decided':
+    case 'approval.updated':
       nextState.approvals[event.aggregateId] = asApproval(
         event.payload as ApprovalDecision,
       );

@@ -1,8 +1,12 @@
 import type {
   AggregateType,
+  ApprovalDecision,
   Company,
   DomainEvent,
   DomainEventType,
+  Objective,
+  Run,
+  WorkItem,
 } from '@escalonalabs/domain';
 
 import { replay } from './core';
@@ -109,5 +113,140 @@ export function createCompanyCreatedEvent(input: {
     correlationId: input.correlationId,
     causationKey: input.idempotencyKey,
     causationId: input.commandId,
+  });
+}
+
+function createAggregateSnapshotEvent<TPayload>(input: {
+  eventId: string;
+  aggregateType: AggregateType;
+  aggregateId: string;
+  companyId: string;
+  eventType: DomainEventType;
+  occurredAt: string;
+  payload: TPayload;
+  streamSequence: number;
+  commandId: string;
+  idempotencyKey: string;
+  actorRef?: string;
+  correlationId?: string;
+}): DomainEvent<TPayload> {
+  return createDomainEvent({
+    eventId: input.eventId,
+    aggregateType: input.aggregateType,
+    aggregateId: input.aggregateId,
+    companyId: input.companyId,
+    eventType: input.eventType,
+    occurredAt: input.occurredAt,
+    payload: input.payload,
+    streamSequence: input.streamSequence,
+    commandId: input.commandId,
+    actorRef: input.actorRef,
+    correlationId: input.correlationId,
+    causationKey: input.idempotencyKey,
+    causationId: input.commandId,
+  });
+}
+
+export function createObjectiveEvent(input: {
+  objective: Objective;
+  eventId: string;
+  eventType: 'objective.created' | 'objective.updated';
+  streamSequence: number;
+  commandId: string;
+  idempotencyKey: string;
+  actorRef?: string;
+  correlationId?: string;
+}): DomainEvent<Objective> {
+  return createAggregateSnapshotEvent({
+    eventId: input.eventId,
+    aggregateType: 'objective',
+    aggregateId: input.objective.objectiveId,
+    companyId: input.objective.companyId,
+    eventType: input.eventType,
+    occurredAt: input.objective.updatedAt,
+    payload: input.objective,
+    streamSequence: input.streamSequence,
+    commandId: input.commandId,
+    idempotencyKey: input.idempotencyKey,
+    actorRef: input.actorRef,
+    correlationId: input.correlationId,
+  });
+}
+
+export function createWorkItemEvent(input: {
+  workItem: WorkItem;
+  eventId: string;
+  eventType: 'work_item.created' | 'work_item.updated';
+  streamSequence: number;
+  commandId: string;
+  idempotencyKey: string;
+  actorRef?: string;
+  correlationId?: string;
+}): DomainEvent<WorkItem> {
+  return createAggregateSnapshotEvent({
+    eventId: input.eventId,
+    aggregateType: 'work_item',
+    aggregateId: input.workItem.workItemId,
+    companyId: input.workItem.companyId,
+    eventType: input.eventType,
+    occurredAt: input.workItem.updatedAt,
+    payload: input.workItem,
+    streamSequence: input.streamSequence,
+    commandId: input.commandId,
+    idempotencyKey: input.idempotencyKey,
+    actorRef: input.actorRef,
+    correlationId: input.correlationId,
+  });
+}
+
+export function createRunEvent(input: {
+  run: Run;
+  eventId: string;
+  eventType: 'run.started' | 'run.completed' | 'run.failed' | 'run.cancelled';
+  streamSequence: number;
+  commandId: string;
+  idempotencyKey: string;
+  actorRef?: string;
+  correlationId?: string;
+}): DomainEvent<Run> {
+  return createAggregateSnapshotEvent({
+    eventId: input.eventId,
+    aggregateType: 'run',
+    aggregateId: input.run.runId,
+    companyId: input.run.companyId,
+    eventType: input.eventType,
+    occurredAt: input.run.updatedAt,
+    payload: input.run,
+    streamSequence: input.streamSequence,
+    commandId: input.commandId,
+    idempotencyKey: input.idempotencyKey,
+    actorRef: input.actorRef,
+    correlationId: input.correlationId,
+  });
+}
+
+export function createApprovalEvent(input: {
+  approval: ApprovalDecision;
+  eventId: string;
+  eventType: 'approval.requested' | 'approval.updated';
+  streamSequence: number;
+  commandId: string;
+  idempotencyKey: string;
+  actorRef?: string;
+  correlationId?: string;
+}): DomainEvent<ApprovalDecision> {
+  return createAggregateSnapshotEvent({
+    eventId: input.eventId,
+    aggregateType: 'approval',
+    aggregateId: input.approval.approvalId,
+    companyId: input.approval.companyId,
+    eventType: input.eventType,
+    occurredAt: input.approval.updatedAt,
+    payload: input.approval,
+    streamSequence: input.streamSequence,
+    commandId: input.commandId,
+    idempotencyKey: input.idempotencyKey,
+    actorRef: input.actorRef,
+    correlationId: input.correlationId,
   });
 }

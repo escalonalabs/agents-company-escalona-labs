@@ -29,6 +29,7 @@ const objective: Objective = {
   title: 'Launch the runtime',
   status: 'planned',
   createdAt: '2026-04-22T00:00:01Z',
+  updatedAt: '2026-04-22T00:00:01Z',
 };
 
 const workItem: WorkItem = {
@@ -38,6 +39,11 @@ const workItem: WorkItem = {
   title: 'Build the kernel',
   status: 'ready',
   attemptBudget: 3,
+  requiresApproval: false,
+  validationContractRef: 'validation.contract.default.v1',
+  scopeRef: 'scope:kernel',
+  createdAt: '2026-04-22T00:00:02Z',
+  updatedAt: '2026-04-22T00:00:02Z',
 };
 
 const run: Run = {
@@ -47,6 +53,8 @@ const run: Run = {
   attempt: 1,
   status: 'valid_success',
   executionPacketId: 'packet_1',
+  createdAt: '2026-04-22T00:00:03Z',
+  updatedAt: '2026-04-22T00:00:03Z',
 };
 
 describe('kernel replay', () => {

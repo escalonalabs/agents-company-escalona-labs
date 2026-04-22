@@ -18,8 +18,10 @@ async function migrate() {
       objective_id text primary key,
       company_id text not null references companies(company_id) on delete cascade,
       title text not null,
+      summary text,
       status text not null,
-      created_at timestamptz not null default now()
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
     );
   `);
 
@@ -29,8 +31,73 @@ async function migrate() {
       company_id text not null references companies(company_id) on delete cascade,
       objective_id text not null references objectives(objective_id) on delete cascade,
       title text not null,
+      description text,
       status text not null,
-      attempt_budget integer not null
+      attempt_budget integer not null,
+      requires_approval boolean not null default false,
+      validation_contract_ref text not null default 'validation.contract.default.v1',
+      scope_ref text not null default 'scope:default',
+      blocking_reason text,
+      latest_run_id text,
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    );
+  `);
+
+  await pool.query(`
+    alter table objectives
+      add column if not exists summary text,
+      add column if not exists updated_at timestamptz not null default now();
+  `);
+
+  await pool.query(`
+    alter table work_items
+      add column if not exists description text,
+      add column if not exists requires_approval boolean not null default false,
+      add column if not exists validation_contract_ref text not null default 'validation.contract.default.v1',
+      add column if not exists scope_ref text not null default 'scope:default',
+      add column if not exists blocking_reason text,
+      add column if not exists latest_run_id text,
+      add column if not exists created_at timestamptz not null default now(),
+      add column if not exists updated_at timestamptz not null default now();
+  `);
+
+  await pool.query(`
+    create table if not exists runs (
+      run_id text primary key,
+      company_id text not null references companies(company_id) on delete cascade,
+      work_item_id text not null references work_items(work_item_id) on delete cascade,
+      attempt integer not null,
+      status text not null,
+      execution_packet_id text,
+      summary text,
+      failure_class text,
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    );
+  `);
+
+  await pool.query(`
+    create table if not exists approvals (
+      approval_id text primary key,
+      company_id text not null references companies(company_id) on delete cascade,
+      work_item_id text not null references work_items(work_item_id) on delete cascade,
+      status text not null,
+      requested_action text not null,
+      decision_reason text,
+      created_at timestamptz not null default now(),
+      updated_at timestamptz not null default now()
+    );
+  `);
+
+  await pool.query(`
+    create table if not exists execution_packets (
+      execution_packet_id text primary key,
+      company_id text not null references companies(company_id) on delete cascade,
+      work_item_id text not null references work_items(work_item_id) on delete cascade,
+      run_id text not null references runs(run_id) on delete cascade,
+      packet jsonb not null,
+      created_at timestamptz not null default now()
     );
   `);
 
