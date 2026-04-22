@@ -13,6 +13,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
+      - name: Detect dependency manifests
+        id: detect
+        run: |
+          if find . \
+            \( -name 'pnpm-lock.yaml' -o -name 'package-lock.json' -o -name 'yarn.lock' -o -name 'bun.lockb' -o -name 'go.mod' -o -name 'Cargo.lock' -o -name 'poetry.lock' -o -name 'requirements*.txt' \) \
+            -not -path './.git/*' \
+            | grep -q .; then
+            echo "has_manifests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_manifests=false" >> "$GITHUB_OUTPUT"
+          fi
 
+      - name: Skip until manifests exist
+        if: steps.detect.outputs.has_manifests != 'true'
+        run: echo "No dependency manifests are present yet; dependency review is deferred."
+
+      - name: Dependency review
+        if: steps.detect.outputs.has_manifests == 'true'
+        uses: actions/dependency-review-action@v4
