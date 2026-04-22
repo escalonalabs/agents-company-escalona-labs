@@ -1,34 +1,134 @@
 {
   "labels": [
-    { "name": "type:epic", "color": "5319e7", "description": "Milestone-sized delivery container" },
-    { "name": "type:spec", "color": "1d76db", "description": "Architecture, contract, or design work" },
-    { "name": "type:feature", "color": "0e8a16", "description": "Implementation-facing feature work" },
-    { "name": "type:integration", "color": "0052cc", "description": "External or cross-system integration work" },
-    { "name": "type:infra", "color": "fbca04", "description": "Infrastructure, CI, or repository controls" },
-    { "name": "type:test", "color": "c2e0c6", "description": "Verification, replay, or test harness work" },
-    { "name": "type:security", "color": "b60205", "description": "Security, policy, or auditability work" },
-    { "name": "type:docs", "color": "bfd4f2", "description": "Documentation and operating guidance" },
-    { "name": "area:foundation", "color": "d4c5f9", "description": "Repository and delivery foundation" },
-    { "name": "area:brand", "color": "f9d0c4", "description": "Brand, naming, and visual system work" },
-    { "name": "area:kernel", "color": "1d76db", "description": "Deterministic kernel contracts" },
-    { "name": "area:github", "color": "0366d6", "description": "GitHub mapping and progress system" },
-    { "name": "area:orchestration", "color": "5319e7", "description": "Company-of-agents orchestration" },
-    { "name": "area:runtime", "color": "0e8a16", "description": "Execution plane and runtime behavior" },
-    { "name": "area:memory", "color": "c5def5", "description": "Memory and provenance systems" },
-    { "name": "area:api", "color": "006b75", "description": "Public API and backend surfaces" },
-    { "name": "area:ui", "color": "fef2c0", "description": "Operator-facing product surfaces" },
-    { "name": "area:release", "color": "e4e669", "description": "Release, readiness, and observability" },
+    {
+      "name": "type:epic",
+      "color": "5319e7",
+      "description": "Milestone-sized delivery container"
+    },
+    {
+      "name": "type:spec",
+      "color": "1d76db",
+      "description": "Architecture, contract, or design work"
+    },
+    {
+      "name": "type:feature",
+      "color": "0e8a16",
+      "description": "Implementation-facing feature work"
+    },
+    {
+      "name": "type:integration",
+      "color": "0052cc",
+      "description": "External or cross-system integration work"
+    },
+    {
+      "name": "type:infra",
+      "color": "fbca04",
+      "description": "Infrastructure, CI, or repository controls"
+    },
+    {
+      "name": "type:test",
+      "color": "c2e0c6",
+      "description": "Verification, replay, or test harness work"
+    },
+    {
+      "name": "type:security",
+      "color": "b60205",
+      "description": "Security, policy, or auditability work"
+    },
+    {
+      "name": "type:docs",
+      "color": "bfd4f2",
+      "description": "Documentation and operating guidance"
+    },
+    {
+      "name": "area:foundation",
+      "color": "d4c5f9",
+      "description": "Repository and delivery foundation"
+    },
+    {
+      "name": "area:brand",
+      "color": "f9d0c4",
+      "description": "Brand, naming, and visual system work"
+    },
+    {
+      "name": "area:kernel",
+      "color": "1d76db",
+      "description": "Deterministic kernel contracts"
+    },
+    {
+      "name": "area:github",
+      "color": "0366d6",
+      "description": "GitHub mapping and progress system"
+    },
+    {
+      "name": "area:orchestration",
+      "color": "5319e7",
+      "description": "Company-of-agents orchestration"
+    },
+    {
+      "name": "area:runtime",
+      "color": "0e8a16",
+      "description": "Execution plane and runtime behavior"
+    },
+    {
+      "name": "area:memory",
+      "color": "c5def5",
+      "description": "Memory and provenance systems"
+    },
+    {
+      "name": "area:api",
+      "color": "006b75",
+      "description": "Public API and backend surfaces"
+    },
+    {
+      "name": "area:ui",
+      "color": "fef2c0",
+      "description": "Operator-facing product surfaces"
+    },
+    {
+      "name": "area:release",
+      "color": "e4e669",
+      "description": "Release, readiness, and observability"
+    },
     { "name": "P0", "color": "b60205", "description": "Critical path work" },
-    { "name": "P1", "color": "d93f0b", "description": "Important follow-on work" },
-    { "name": "P2", "color": "fbca04", "description": "Useful but not immediate" },
+    {
+      "name": "P1",
+      "color": "d93f0b",
+      "description": "Important follow-on work"
+    },
+    {
+      "name": "P2",
+      "color": "fbca04",
+      "description": "Useful but not immediate"
+    },
     { "name": "size:S", "color": "c2e0c6", "description": "Small slice" },
     { "name": "size:M", "color": "bfdadc", "description": "Medium slice" },
     { "name": "size:L", "color": "f9d0c4", "description": "Large slice" },
-    { "name": "state:ready", "color": "0e8a16", "description": "Ready to execute" },
-    { "name": "state:blocked", "color": "b60205", "description": "Blocked pending external action" },
-    { "name": "state:needs-decision", "color": "d93f0b", "description": "Waiting on irreversible decision" },
-    { "name": "track:mvp", "color": "1d76db", "description": "Part of the MVP path" },
-    { "name": "track:post-mvp", "color": "5319e7", "description": "Intentionally deferred beyond MVP" }
+    {
+      "name": "state:ready",
+      "color": "0e8a16",
+      "description": "Ready to execute"
+    },
+    {
+      "name": "state:blocked",
+      "color": "b60205",
+      "description": "Blocked pending external action"
+    },
+    {
+      "name": "state:needs-decision",
+      "color": "d93f0b",
+      "description": "Waiting on irreversible decision"
+    },
+    {
+      "name": "track:mvp",
+      "color": "1d76db",
+      "description": "Part of the MVP path"
+    },
+    {
+      "name": "track:post-mvp",
+      "color": "5319e7",
+      "description": "Intentionally deferred beyond MVP"
+    }
   ],
   "milestones": [
     {
@@ -69,7 +169,14 @@
       "key": "AC-001",
       "title": "Define the product charter, MVP scope, and glossary",
       "milestone": "M0 Foundation",
-      "labels": ["type:docs", "area:foundation", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:docs",
+        "area:foundation",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": [],
       "body": "Outcome:\\nProduce the founding product charter for Agents Company, including mission, MVP scope boundaries, non-goals, and shared glossary.\\n\\nValidation:\\nA single document defines the product north star, in-scope MVP surfaces, out-of-scope items, and common terminology without unresolved contradictions."
     },
@@ -77,7 +184,14 @@
       "key": "AC-002",
       "title": "Define the clean-room policy and no-copy operating rule",
       "milestone": "M0 Foundation",
-      "labels": ["type:security", "area:foundation", "P0", "size:S", "state:ready", "track:mvp"],
+      "labels": [
+        "type:security",
+        "area:foundation",
+        "P0",
+        "size:S",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-001"],
       "body": "Outcome:\\nWrite the clean-room build policy and provenance checklist for this repository.\\n\\nValidation:\\nContributors can tell what kinds of external inspiration are allowed, what is forbidden, and what proof of originality must accompany future implementation work."
     },
@@ -85,7 +199,14 @@
       "key": "AC-003",
       "title": "Design the monorepo topology and bounded contexts",
       "milestone": "M0 Foundation",
-      "labels": ["type:spec", "area:foundation", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:foundation",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-001"],
       "body": "Outcome:\\nDefine the intended package and application boundaries for the new monorepo, including ownership seams between core, UI, runtime, API, and future apps.\\n\\nValidation:\\nThe topology can be implemented without renaming or reworking the same boundary twice."
     },
@@ -93,7 +214,14 @@
       "key": "AC-004",
       "title": "Design the GitHub-first operating system",
       "milestone": "M0 Foundation",
-      "labels": ["type:spec", "area:github", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:github",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-001"],
       "body": "Outcome:\\nDefine labels, milestones, issue and PR templates, workflow states, and the rule set for how humans and subagents operate through GitHub.\\n\\nValidation:\\nA contributor can join the project and understand how work enters, advances, blocks, and closes through GitHub alone."
     },
@@ -101,7 +229,14 @@
       "key": "AC-005",
       "title": "Define CI baseline, branch protection, and CODEOWNERS",
       "milestone": "M0 Foundation",
-      "labels": ["type:infra", "area:foundation", "P0", "size:S", "state:ready", "track:mvp"],
+      "labels": [
+        "type:infra",
+        "area:foundation",
+        "P0",
+        "size:S",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-003", "AC-004"],
       "body": "Outcome:\\nEstablish the baseline repository controls for merge safety, review discipline, and required checks.\\n\\nValidation:\\nThe repository enforces PR-based delivery with at least one required check and clear ownership for all paths."
     },
@@ -109,7 +244,14 @@
       "key": "AC-006",
       "title": "Create the brand guide from the approved logo seed",
       "milestone": "M0 Foundation",
-      "labels": ["type:docs", "area:brand", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:docs",
+        "area:brand",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-001"],
       "body": "Outcome:\\nTurn the approved logo seed into the first official brand guide covering naming, palette, usage rules, and pending brand assets.\\n\\nValidation:\\nFuture product surfaces can reference one documented brand source instead of improvising style decisions."
     },
@@ -117,7 +259,14 @@
       "key": "AC-007",
       "title": "Define the canonical technical naming system",
       "milestone": "M0 Foundation",
-      "labels": ["type:spec", "area:brand", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:brand",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-001", "AC-006"],
       "body": "Outcome:\\nLock the repository slug, package scopes, Go module path, CLI name, app identifiers, and storage or environment prefixes.\\n\\nValidation:\\nThere is one authoritative naming map for all technical surfaces and future refactors do not have to guess names."
     },
@@ -125,7 +274,14 @@
       "key": "AC-101",
       "title": "Define the canonical domain model",
       "milestone": "M1 Kernel v1",
-      "labels": ["type:spec", "area:kernel", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:kernel",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-003"],
       "body": "Outcome:\\nDefine the domain entities for company, agent, objective, work item, run, approval, artifact, and related invariants.\\n\\nValidation:\\nThe model supports deterministic execution planning without vague or overlapping concepts."
     },
@@ -133,7 +289,14 @@
       "key": "AC-102",
       "title": "Define the runtime state machine and event schema",
       "milestone": "M1 Kernel v1",
-      "labels": ["type:spec", "area:kernel", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:kernel",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-101"],
       "body": "Outcome:\\nSpecify the allowed runtime states, transitions, event types, and event payload expectations.\\n\\nValidation:\\nEvery runtime transition can be replayed and explained from typed events rather than inferred from side effects."
     },
@@ -141,7 +304,14 @@
       "key": "AC-103",
       "title": "Design replay, idempotency, and retry semantics",
       "milestone": "M1 Kernel v1",
-      "labels": ["type:spec", "area:kernel", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:kernel",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-102"],
       "body": "Outcome:\\nDefine how the kernel replays runs, detects duplicates, and handles retries without breaking determinism.\\n\\nValidation:\\nThe project has explicit rules for replay safety, duplicate suppression, and retry boundaries."
     },
@@ -149,7 +319,14 @@
       "key": "AC-104",
       "title": "Design the persistent ledger and materialized projections",
       "milestone": "M1 Kernel v1",
-      "labels": ["type:spec", "area:kernel", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:kernel",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-102"],
       "body": "Outcome:\\nDefine the storage model for the internal ledger and the projections needed by operator-facing surfaces.\\n\\nValidation:\\nThe ledger truth and the projected read models are separated clearly and can evolve independently."
     },
@@ -157,7 +334,14 @@
       "key": "AC-105",
       "title": "Design the golden trace harness",
       "milestone": "M1 Kernel v1",
-      "labels": ["type:test", "area:kernel", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:test",
+        "area:kernel",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-103", "AC-104"],
       "body": "Outcome:\\nDefine the contract-test harness that uses golden traces to validate reducer behavior and replay stability.\\n\\nValidation:\\nA future implementation team has a clear verification path for correctness against canonical traces."
     },
@@ -165,7 +349,14 @@
       "key": "AC-201",
       "title": "Design the kernel-to-GitHub mapping",
       "milestone": "M2 GitHub Backbone",
-      "labels": ["type:spec", "area:github", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:github",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-102", "AC-104"],
       "body": "Outcome:\\nDefine how objectives, work items, approvals, and runs project into GitHub issues, milestones, comments, checks, and metadata.\\n\\nValidation:\\nThe mapping preserves human clarity without turning GitHub into runtime truth."
     },
@@ -173,7 +364,14 @@
       "key": "AC-202",
       "title": "Design GitHub App authentication and permissions",
       "milestone": "M2 GitHub Backbone",
-      "labels": ["type:integration", "area:github", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:integration",
+        "area:github",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-004"],
       "body": "Outcome:\\nDefine the GitHub App installation flow, token model, repository permissions, and minimum scopes required.\\n\\nValidation:\\nThe integration can operate safely with least privilege and without permission ambiguity."
     },
@@ -181,7 +379,14 @@
       "key": "AC-203",
       "title": "Design outbound GitHub synchronization",
       "milestone": "M2 GitHub Backbone",
-      "labels": ["type:integration", "area:github", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:integration",
+        "area:github",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-201", "AC-202"],
       "body": "Outcome:\\nDefine how runtime progress is projected outward into GitHub updates, comments, and checks.\\n\\nValidation:\\nOutbound sync behavior is deterministic, observable, and bounded by explicit rules."
     },
@@ -189,7 +394,14 @@
       "key": "AC-204",
       "title": "Design inbound reconciliation and conflict handling",
       "milestone": "M2 GitHub Backbone",
-      "labels": ["type:integration", "area:github", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:integration",
+        "area:github",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-201", "AC-202"],
       "body": "Outcome:\\nDefine how human edits or GitHub changes are interpreted, validated, and reconciled against the internal ledger.\\n\\nValidation:\\nThe project has a conflict policy that prevents silent state corruption."
     },
@@ -197,7 +409,14 @@
       "key": "AC-205",
       "title": "Design drift detection and audit rules",
       "milestone": "M2 GitHub Backbone",
-      "labels": ["type:spec", "area:github", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:github",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-203", "AC-204", "AC-104"],
       "body": "Outcome:\\nDefine the audit trail and drift model between the runtime ledger and GitHub projections.\\n\\nValidation:\\nA human operator can understand when GitHub and runtime views diverge and how the system responds."
     },
@@ -205,7 +424,14 @@
       "key": "AC-301",
       "title": "Define the organizational model and handoff contracts",
       "milestone": "M3 Orchestration",
-      "labels": ["type:spec", "area:orchestration", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:orchestration",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-101"],
       "body": "Outcome:\\nDefine the company-of-agents structure, role boundaries, and allowed handoff semantics.\\n\\nValidation:\\nThe orchestration layer can allocate work without relying on conversational ambiguity."
     },
@@ -213,7 +439,14 @@
       "key": "AC-302",
       "title": "Design the planner/compiler",
       "milestone": "M3 Orchestration",
-      "labels": ["type:feature", "area:orchestration", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:orchestration",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-102", "AC-301"],
       "body": "Outcome:\\nDefine how a high-level objective becomes an executable plan graph with bounded work items.\\n\\nValidation:\\nThe planner output is structured, reviewable, and suitable for deterministic scheduling."
     },
@@ -221,7 +454,14 @@
       "key": "AC-303",
       "title": "Design the scheduler with leases and retries",
       "milestone": "M3 Orchestration",
-      "labels": ["type:feature", "area:orchestration", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:orchestration",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-103", "AC-104", "AC-302"],
       "body": "Outcome:\\nDefine concurrency caps, leases, retries, queue semantics, and handoff safety for the scheduler.\\n\\nValidation:\\nThe scheduler design prevents ambiguous ownership and preserves replayability."
     },
@@ -229,7 +469,14 @@
       "key": "AC-304",
       "title": "Design approvals, escalation, and human override",
       "milestone": "M3 Orchestration",
-      "labels": ["type:feature", "area:orchestration", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:orchestration",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-102", "AC-301"],
       "body": "Outcome:\\nDefine the approval graph, escalation rules, and how humans can override flow safely.\\n\\nValidation:\\nThe system knows exactly when to pause, escalate, or accept explicit human intervention."
     },
@@ -237,7 +484,14 @@
       "key": "AC-305",
       "title": "Design the multi-agent simulation harness",
       "milestone": "M3 Orchestration",
-      "labels": ["type:test", "area:orchestration", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:test",
+        "area:orchestration",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-303", "AC-304"],
       "body": "Outcome:\\nDefine the simulation environment and failure-injection scenarios used to evaluate orchestration before full implementation.\\n\\nValidation:\\nThe harness covers contention, retries, approvals, and deadlock-style failure modes."
     },
@@ -245,7 +499,14 @@
       "key": "AC-401",
       "title": "Define deterministic tool and effect envelopes",
       "milestone": "M4 Execution Plane",
-      "labels": ["type:spec", "area:runtime", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:runtime",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-103"],
       "body": "Outcome:\\nDefine the canonical envelope for tools and effects so execution remains bounded and replay-aware.\\n\\nValidation:\\nTool usage can be reasoned about without implicit side channels."
     },
@@ -253,7 +514,14 @@
       "key": "AC-402",
       "title": "Design executor boundaries",
       "milestone": "M4 Execution Plane",
-      "labels": ["type:feature", "area:runtime", "P0", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-401", "AC-303"],
       "body": "Outcome:\\nDefine the executor interfaces for HTTP, shell, browser, and internal runtime actions.\\n\\nValidation:\\nThe execution plane separates intent, policy, and side-effect delivery cleanly."
     },
@@ -261,7 +529,14 @@
       "key": "AC-403",
       "title": "Design the capability policy engine",
       "milestone": "M4 Execution Plane",
-      "labels": ["type:security", "area:runtime", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:security",
+        "area:runtime",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-304", "AC-401"],
       "body": "Outcome:\\nDefine the policy model for capabilities, scopes, approvals, and execution permissions.\\n\\nValidation:\\nA reviewer can explain what a task may do, under what authority, and how that is enforced."
     },
@@ -269,7 +544,14 @@
       "key": "AC-404",
       "title": "Design artifact storage and execution attachments",
       "milestone": "M4 Execution Plane",
-      "labels": ["type:feature", "area:runtime", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-104", "AC-402"],
       "body": "Outcome:\\nDefine how execution artifacts, evidence, and attachments are stored, linked, retained, and surfaced.\\n\\nValidation:\\nArtifacts have a clear lifecycle and support replay, review, and memory extraction."
     },
@@ -277,7 +559,14 @@
       "key": "AC-405",
       "title": "Define the MVP tool pack",
       "milestone": "M4 Execution Plane",
-      "labels": ["type:feature", "area:runtime", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-202", "AC-402", "AC-403", "AC-404"],
       "body": "Outcome:\\nDefine the initial set of tools required for MVP runtime usefulness.\\n\\nValidation:\\nThe tool pack is small, policy-aware, and sufficient to support the MVP execution loops."
     },
@@ -285,7 +574,14 @@
       "key": "AC-406",
       "title": "Design the immutable execution packet and fail-closed task result",
       "milestone": "M4 Execution Plane",
-      "labels": ["type:spec", "area:runtime", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:runtime",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-401", "AC-404"],
       "body": "Outcome:\\nDefine the frozen execution packet and the task-result contract that prevents invalid outputs from causing downstream continuation.\\n\\nValidation:\\nTask execution cannot proceed on partial, malformed, or ambiguous result payloads."
     },
@@ -293,7 +589,14 @@
       "key": "AC-501",
       "title": "Define memory strata and retention",
       "milestone": "M5 Memory",
-      "labels": ["type:spec", "area:memory", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:memory",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-104"],
       "body": "Outcome:\\nDefine the memory layers, retention windows, and intended uses for each layer.\\n\\nValidation:\\nThe memory model avoids mixing ephemeral runtime state with durable knowledge."
     },
@@ -301,7 +604,14 @@
       "key": "AC-502",
       "title": "Design memory extraction from runs, artifacts, and GitHub events",
       "milestone": "M5 Memory",
-      "labels": ["type:feature", "area:memory", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:memory",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-404", "AC-205", "AC-501"],
       "body": "Outcome:\\nDefine how durable knowledge is extracted from execution traces, artifacts, and GitHub activity.\\n\\nValidation:\\nKnowledge extraction rules are explicit, bounded, and auditable."
     },
@@ -309,7 +619,14 @@
       "key": "AC-503",
       "title": "Design retrieval policy and invalidation",
       "milestone": "M5 Memory",
-      "labels": ["type:feature", "area:memory", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:memory",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-501", "AC-502"],
       "body": "Outcome:\\nDefine what memory can be retrieved, when it is valid, and how stale or invalid memory is rejected.\\n\\nValidation:\\nThe retrieval model does not smuggle in hidden state or outdated context."
     },
@@ -317,7 +634,14 @@
       "key": "AC-504",
       "title": "Design provenance graph and knowledge digestion",
       "milestone": "M5 Memory",
-      "labels": ["type:feature", "area:memory", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:memory",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-501", "AC-502"],
       "body": "Outcome:\\nDefine the provenance graph and the process that turns raw evidence into reusable knowledge.\\n\\nValidation:\\nEach knowledge artifact can be traced back to source evidence and transformation steps."
     },
@@ -325,7 +649,14 @@
       "key": "AC-505",
       "title": "Design recall and contamination evaluation",
       "milestone": "M5 Memory",
-      "labels": ["type:test", "area:memory", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:test",
+        "area:memory",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-503", "AC-504"],
       "body": "Outcome:\\nDefine the evaluation suite used to measure recall quality, contamination risk, and knowledge usefulness.\\n\\nValidation:\\nThe team can tell whether the memory system is helping or harming execution quality."
     },
@@ -333,7 +664,14 @@
       "key": "AC-601",
       "title": "Define the public API surface",
       "milestone": "M6 Control Plane",
-      "labels": ["type:spec", "area:api", "P1", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:spec",
+        "area:api",
+        "P1",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-101", "AC-201", "AC-301"],
       "body": "Outcome:\\nDefine the public API contracts for companies, agents, objectives, runs, approvals, and related control surfaces.\\n\\nValidation:\\nThe API pack is coherent and aligned with the domain and GitHub projection models."
     },
@@ -341,7 +679,14 @@
       "key": "AC-602",
       "title": "Design timeline, event stream, and control endpoints",
       "milestone": "M6 Control Plane",
-      "labels": ["type:feature", "area:api", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:api",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-303", "AC-404", "AC-601"],
       "body": "Outcome:\\nDefine the control-plane backend needed for timelines, streams, and operator control actions.\\n\\nValidation:\\nAn operator can inspect and act on runtime state through explicit backend contracts."
     },
@@ -349,7 +694,14 @@
       "key": "AC-603",
       "title": "Design the base operator UI",
       "milestone": "M6 Control Plane",
-      "labels": ["type:feature", "area:ui", "P1", "size:L", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:ui",
+        "P1",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-602"],
       "body": "Outcome:\\nDefine the main operator experience for viewing companies, agents, runs, approvals, and current state.\\n\\nValidation:\\nThe base UI can explain runtime state without requiring hidden chat context."
     },
@@ -357,7 +709,14 @@
       "key": "AC-604",
       "title": "Design GitHub-linked progress and drift alerts",
       "milestone": "M6 Control Plane",
-      "labels": ["type:feature", "area:ui", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:ui",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-203", "AC-204", "AC-603"],
       "body": "Outcome:\\nDefine the progress views and alerts that show how runtime state relates to GitHub projections.\\n\\nValidation:\\nOperators can detect projection drift and inspect the reason without guesswork."
     },
@@ -365,7 +724,14 @@
       "key": "AC-605",
       "title": "Design GitHub App onboarding and first company bootstrap",
       "milestone": "M6 Control Plane",
-      "labels": ["type:feature", "area:ui", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:feature",
+        "area:ui",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-202", "AC-203", "AC-603"],
       "body": "Outcome:\\nDefine the onboarding path for connecting GitHub and bootstrapping the first company workspace.\\n\\nValidation:\\nA new operator can understand how to connect a repository and stand up the first company instance."
     },
@@ -373,7 +739,14 @@
       "key": "AC-701",
       "title": "Define SLOs, tracing, and error taxonomy",
       "milestone": "M7 Alpha Readiness",
-      "labels": ["type:infra", "area:release", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:infra",
+        "area:release",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-203", "AC-303", "AC-404", "AC-602"],
       "body": "Outcome:\\nDefine the core service levels, tracing model, and error taxonomy for alpha operations.\\n\\nValidation:\\nReadiness work can use a single operational language for health, latency, and failure modes."
     },
@@ -381,7 +754,14 @@
       "key": "AC-702",
       "title": "Enforce replay regression in CI",
       "milestone": "M7 Alpha Readiness",
-      "labels": ["type:test", "area:release", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:test",
+        "area:release",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-105", "AC-205", "AC-305", "AC-701"],
       "body": "Outcome:\\nDefine and implement the CI gate that prevents replay regressions from landing unnoticed.\\n\\nValidation:\\nReplay-based correctness is a merge requirement rather than a manual hope."
     },
@@ -389,7 +769,14 @@
       "key": "AC-703",
       "title": "Close security review for permissions, secrets, and auditability",
       "milestone": "M7 Alpha Readiness",
-      "labels": ["type:security", "area:release", "P0", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:security",
+        "area:release",
+        "P0",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-403", "AC-405", "AC-701"],
       "body": "Outcome:\\nComplete the alpha security review focused on permissions, secrets handling, and auditability.\\n\\nValidation:\\nKnown security assumptions are written down and reviewed before alpha release."
     },
@@ -397,7 +784,14 @@
       "key": "AC-704",
       "title": "Design end-to-end reference workflows",
       "milestone": "M7 Alpha Readiness",
-      "labels": ["type:test", "area:release", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:test",
+        "area:release",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-604", "AC-505", "AC-703"],
       "body": "Outcome:\\nDefine the reference workflows used to validate the system end to end during alpha.\\n\\nValidation:\\nThe team has a small, explicit suite of realistic flows for launch gating."
     },
@@ -405,10 +799,16 @@
       "key": "AC-705",
       "title": "Prepare the alpha release and operational runbook",
       "milestone": "M7 Alpha Readiness",
-      "labels": ["type:docs", "area:release", "P1", "size:M", "state:ready", "track:mvp"],
+      "labels": [
+        "type:docs",
+        "area:release",
+        "P1",
+        "size:M",
+        "state:ready",
+        "track:mvp"
+      ],
       "depends_on": ["AC-702", "AC-703", "AC-704"],
       "body": "Outcome:\\nPrepare the release checklist, rollback guidance, operational runbook, and alpha handoff packet.\\n\\nValidation:\\nAlpha can launch with an explicit operational path instead of tribal knowledge."
     }
   ]
 }
-

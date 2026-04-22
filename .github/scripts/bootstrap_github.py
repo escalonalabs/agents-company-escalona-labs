@@ -10,7 +10,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SEED_PATH = REPO_ROOT / "docs" / "backlog" / "github-seed.json"
+SEED_DIR = REPO_ROOT / "docs" / "backlog"
 ISSUE_KEY_RE = re.compile(r"^(AC-\d+)\b")
 DEFAULT_LABELS = [
     "bug",
@@ -28,6 +28,7 @@ REQUIRED_STATUS_CHECKS = [
     "dependency-review",
     "secret-scan",
     "replay-regression",
+    "ci",
 ]
 
 
@@ -77,7 +78,37 @@ def gh_paginated_items(path: str) -> list[dict[str, Any]]:
 
 
 def load_seed() -> dict[str, Any]:
-    return json.loads(SEED_PATH.read_text(encoding="utf-8"))
+    seed_files = sorted(SEED_DIR.glob("*seed.json"))
+    merged: dict[str, Any] = {"labels": [], "milestones": [], "issues": []}
+    seen_labels: set[str] = set()
+    seen_milestones: set[str] = set()
+    seen_issues: set[str] = set()
+
+    for path in seed_files:
+        seed = json.loads(path.read_text(encoding="utf-8"))
+
+        for label in seed.get("labels", []):
+            name = label["name"]
+            if name in seen_labels:
+                continue
+            merged["labels"].append(label)
+            seen_labels.add(name)
+
+        for milestone in seed.get("milestones", []):
+            title = milestone["title"]
+            if title in seen_milestones:
+                continue
+            merged["milestones"].append(milestone)
+            seen_milestones.add(title)
+
+        for issue in seed.get("issues", []):
+            key = issue["key"]
+            if key in seen_issues:
+                continue
+            merged["issues"].append(issue)
+            seen_issues.add(key)
+
+    return merged
 
 
 def requested_operations(args: argparse.Namespace) -> list[str]:
@@ -92,6 +123,8 @@ def requested_operations(args: argparse.Namespace) -> list[str]:
         requested.append("delete_default_labels")
     if args.protect_main:
         requested.append("protect_main")
+    if args.unprotect_main:
+        requested.append("unprotect_main")
     if requested:
         return requested
     return ["sync_labels", "sync_milestones", "sync_issues"]
@@ -332,6 +365,10 @@ def protect_main(repo: str) -> None:
         raise
 
 
+def unprotect_main(repo: str) -> None:
+    gh_api_json("DELETE", f"repos/{repo}/branches/main/protection")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True, help="owner/name")
@@ -345,6 +382,7 @@ def main() -> int:
         help="When syncing existing issues, also reset their labels to the seeded set",
     )
     parser.add_argument("--protect-main", action="store_true", help="Apply branch protection on main")
+    parser.add_argument("--unprotect-main", action="store_true", help="Remove branch protection from main")
     parser.add_argument("--delete-default-labels", action="store_true", help="Delete GitHub default labels")
     args = parser.parse_args()
 
@@ -364,6 +402,8 @@ def main() -> int:
             print("- default labels: delete requested")
         if "protect_main" in operations:
             print(f"- branch protection: require {', '.join(REQUIRED_STATUS_CHECKS)}")
+        if "unprotect_main" in operations:
+            print("- branch protection: remove from main")
         return 0
 
     try:
@@ -387,6 +427,9 @@ def main() -> int:
 
         if "protect_main" in operations:
             protect_main(args.repo)
+
+        if "unprotect_main" in operations:
+            unprotect_main(args.repo)
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 1

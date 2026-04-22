@@ -1,0 +1,19 @@
+{
+  "name": "@escalonalabs/control-plane",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@escalonalabs/domain": "workspace:*",
+    "@escalonalabs/kernel": "workspace:*",
+    "fastify": "^5.6.1",
+    "pg": "^8.16.3"
+  },
+  "scripts": {
+    "dev": "pnpm exec tsx watch src/server.ts",
+    "build": "pnpm exec tsup src/server.ts src/db/migrate.ts src/db/seed.ts --format esm --clean",
+    "typecheck": "pnpm exec tsc -p tsconfig.json",
+    "db:migrate": "pnpm exec tsx src/db/migrate.ts",
+    "db:seed": "pnpm exec tsx src/db/seed.ts"
+  }
+}

@@ -67,3 +67,42 @@
 - `AC-704` Design end-to-end reference workflows
 - `AC-705` Prepare the alpha release and operational runbook
 
+## M8 Buildable Foundation
+
+- `AC-801` Deliver M8 Buildable Foundation
+
+## M9 Domain and Kernel Runtime v1
+
+- `AC-901` Deliver M9 Domain and Kernel Runtime v1
+
+## M10 Orchestration and Execution Plane v1
+
+- `AC-1001` Deliver M10 Orchestration and Execution Plane v1
+
+## M11 GitHub Backbone Runtime
+
+- `AC-1101` Deliver M11 GitHub Backbone Runtime
+
+## M12 Control Plane MVP
+
+- `AC-1201` Deliver M12 Control Plane MVP
+
+## M13 Memory and Provenance v1
+
+- `AC-1301` Deliver M13 Memory and Provenance v1
+
+## M14 Customer Foundations
+
+- `AC-1401` Deliver M14 Customer Foundations
+
+## M15 Production Infrastructure and Reliability
+
+- `AC-1501` Deliver M15 Production Infrastructure and Reliability
+
+## M16 Internal Alpha and Controlled Beta
+
+- `AC-1601` Deliver M16 Internal Alpha and Controlled Beta
+
+## M17 General Availability
+
+- `AC-1701` Deliver M17 General Availability

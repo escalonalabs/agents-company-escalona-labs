@@ -26,3 +26,9 @@ Use GitHub as the default system for progress, backlog, task ownership, and deli
 - Evidence before completion claims
 - One issue, one decision boundary
 
+## Temporary build mode
+
+- During `M8` through `M15`, `main` may accept direct pushes so implementation velocity is not gated by review friction
+- GitHub still remains the source of truth for milestone epics, ADRs, blockers, incidents, and releases
+- `M16` restores protection on release candidates
+- `M17` restores strong protection on `main`

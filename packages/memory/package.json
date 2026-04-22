@@ -1,0 +1,20 @@
+{
+  "name": "@escalonalabs/memory",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@escalonalabs/domain": "workspace:*"
+  },
+  "scripts": {
+    "build": "pnpm exec tsup src/index.ts --format esm --dts --clean",
+    "typecheck": "pnpm exec tsc -p tsconfig.json"
+  }
+}

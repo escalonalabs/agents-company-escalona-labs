@@ -1,0 +1,15 @@
+{
+  "name": "@escalonalabs/github-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@escalonalabs/github": "workspace:*",
+    "fastify": "^5.6.1"
+  },
+  "scripts": {
+    "dev": "pnpm exec tsx watch src/server.ts",
+    "build": "pnpm exec tsup src/server.ts --format esm --clean",
+    "typecheck": "pnpm exec tsc -p tsconfig.json"
+  }
+}

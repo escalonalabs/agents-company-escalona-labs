@@ -4,9 +4,9 @@ Agents Company is a clean-room rebuild for a GitHub-first company-of-agents plat
 
 ## What this repository contains today
 
-- A governance-first repository scaffold
+- A real pnpm monorepo for the product runtime, control plane, and operator UI
 - The product roadmap and delivery operating model
-- Initial architecture decisions
+- Architecture decisions and runtime contracts
 - GitHub templates, ownership rules, and CI guardrails
 
 ## Core principles
@@ -24,7 +24,43 @@ Agents Company is a clean-room rebuild for a GitHub-first company-of-agents plat
 - `docs/backlog/` for backlog mirrors and operating system notes
 - `docs/brand/` for naming and visual guidance
 - `docs/operations/` for contributor and delivery rules
+- `apps/control-web/` for the operator web UI
+- `packages/` for shared runtime, domain, GitHub, memory, and UI packages
+- `server/control-plane/` and `server/github-app/` for backend surfaces
 - `.github/` for templates, ownership, and CI guardrails
+
+## Quick Start
+
+1. Install dependencies:
+
+```bash
+pnpm install
+```
+
+2. Copy the environment template:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Boot local dependencies:
+
+```bash
+pnpm dev:stack
+```
+
+4. Run database setup:
+
+```bash
+pnpm db:migrate
+pnpm db:seed
+```
+
+5. Start the app and backend services:
+
+```bash
+pnpm dev
+```
 
 ## Validation
 
@@ -33,6 +69,7 @@ Run the repository guardrails locally:
 ```bash
 pnpm check:repo
 pnpm check:replay
+pnpm ci
 ```
 
 ## Security

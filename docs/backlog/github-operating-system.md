@@ -117,7 +117,10 @@
 
 ## Branch protection status
 
-- `main` is protected with required pull requests, CODEOWNERS review, conversation resolution, and required checks
-- required checks are `repo-guardrails`, `dependency-review`, `secret-scan`, and `replay-regression`
+- `main` is currently in temporary `Build Mode Casi Libre` during `M8` through `M15`
+- direct push to `main` is allowed during Build Mode
+- pull requests and review are optional during Build Mode, but milestone epics, ADRs, incidents, blockers, and releases still live in GitHub
+- release candidate protection returns in `M16`
+- strong protection returns to `main` in `M17`
 - The temporary private-repo blocker was resolved by making the repository public on `2026-04-22`
 - The bootstrap script still fails closed if protection cannot be applied in a future environment

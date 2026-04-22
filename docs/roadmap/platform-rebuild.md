@@ -14,6 +14,16 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 - `M5 Memory`
 - `M6 Control Plane`
 - `M7 Alpha Readiness`
+- `M8 Buildable Foundation`
+- `M9 Domain and Kernel Runtime v1`
+- `M10 Orchestration and Execution Plane v1`
+- `M11 GitHub Backbone Runtime`
+- `M12 Control Plane MVP`
+- `M13 Memory and Provenance v1`
+- `M14 Customer Foundations`
+- `M15 Production Infrastructure and Reliability`
+- `M16 Internal Alpha and Controlled Beta`
+- `M17 General Availability`
 
 ## Non-negotiables
 
@@ -77,6 +87,76 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 - Reference workflows defined for launch gating
 - Release and rollback runbook ready
 
+### M8 Buildable Foundation
+
+- Runnable pnpm monorepo exists
+- Local Docker Compose dependencies exist
+- App, servers, and packages compile
+- Code CI exists beyond repository guardrails
+
+### M9 Domain and Kernel Runtime v1
+
+- Canonical domain types exist in code
+- Ledger-backed reducer exists
+- Replay runs against real code
+- Golden traces validate runtime behavior
+
+### M10 Orchestration and Execution Plane v1
+
+- Planning and scheduling exist in code
+- Execution packets and validators exist
+- Worker runtime exists
+- First bounded tool pack executes end to end
+
+### M11 GitHub Backbone Runtime
+
+- GitHub App auth exists
+- Webhooks and sync exist
+- Reconciliation and drift detection exist
+- GitHub mirrors runtime truth for humans
+
+### M12 Control Plane MVP
+
+- Auth and session management exist
+- Operator APIs exist
+- Control web app exists
+- Real runtime activity can be inspected and controlled from UI
+
+### M13 Memory and Provenance v1
+
+- Memory extraction and retrieval exist
+- Provenance graph exists
+- Contamination controls exist
+- Memory remains auditable and bounded
+
+### M14 Customer Foundations
+
+- Multi-company isolation exists
+- Invitations and onboarding exist
+- Multi-repo support exists
+- Self-hosted packaging foundations exist
+
+### M15 Production Infrastructure and Reliability
+
+- Hosted staging and production exist
+- Observability exists
+- Backup and restore are proven
+- Reliability drills are operationalized
+
+### M16 Internal Alpha and Controlled Beta
+
+- Internal dogfooding is active
+- Controlled external beta exists
+- Release candidates are protected
+- Rollback is proven on real releases
+
+### M17 General Availability
+
+- Strong GitHub protection returns on `main`
+- Hosted and self-hosted docs are published
+- Support and release discipline are explicit
+- Product is customer-ready for GA
+
 ## Build order
 
 1. Foundation and naming
@@ -85,3 +165,9 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 4. Orchestration and execution controls
 5. Memory and operator UX
 6. Alpha readiness and release discipline
+7. Executable monorepo foundation
+8. Kernel runtime
+9. Execution and orchestration
+10. GitHub runtime integration
+11. Operator control plane
+12. Customer and production readiness

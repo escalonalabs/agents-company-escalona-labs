@@ -1,0 +1,196 @@
+{
+  "milestones": [
+    {
+      "title": "M8 Buildable Foundation",
+      "description": "Definition of Done: the repository is a real pnpm TypeScript monorepo with runnable apps, servers, package boundaries, Docker Compose, env templates, and code CI."
+    },
+    {
+      "title": "M9 Domain and Kernel Runtime v1",
+      "description": "Definition of Done: domain types, ledger-backed kernel, reducer, replay, projections, and golden traces execute against real code."
+    },
+    {
+      "title": "M10 Orchestration and Execution Plane v1",
+      "description": "Definition of Done: planner, scheduler, leases, retries, execution packets, validators, workers, and fail-closed execution exist end to end."
+    },
+    {
+      "title": "M11 GitHub Backbone Runtime",
+      "description": "Definition of Done: GitHub App auth, webhooks, outbound sync, inbound reconciliation, and drift detection run against the real runtime."
+    },
+    {
+      "title": "M12 Control Plane MVP",
+      "description": "Definition of Done: auth, sessions, company bootstrap, operator APIs, and the control web app can operate the system without terminal dependence."
+    },
+    {
+      "title": "M13 Memory and Provenance v1",
+      "description": "Definition of Done: memory extraction, retrieval, invalidation, provenance, and contamination controls operate against runtime evidence."
+    },
+    {
+      "title": "M14 Customer Foundations",
+      "description": "Definition of Done: multi-company isolation, invitations, onboarding, config, secrets, multi-repo support, and self-hosted packaging are usable for external customers."
+    },
+    {
+      "title": "M15 Production Infrastructure and Reliability",
+      "description": "Definition of Done: staging and production infrastructure, observability, backups, restore drills, and reliability controls are live."
+    },
+    {
+      "title": "M16 Internal Alpha and Controlled Beta",
+      "description": "Definition of Done: internal dogfooding and controlled external beta run on the real platform with release candidate protections and proven rollback."
+    },
+    {
+      "title": "M17 General Availability",
+      "description": "Definition of Done: hosted and self-hosted releases are customer-ready, supportable, and protected by final release discipline."
+    }
+  ],
+  "issues": [
+    {
+      "key": "AC-801",
+      "title": "Deliver M8 Buildable Foundation",
+      "milestone": "M8 Buildable Foundation",
+      "labels": [
+        "type:epic",
+        "area:foundation",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": [],
+      "body": "Outcome:\\nConvert the repository from docs-only into a runnable monorepo with real apps, packages, Docker Compose, env templates, and code CI.\\n\\nValidation:\\nA fresh clone can install, boot local dependencies, compile the app/server/package graph, and run baseline tests without hidden steps."
+    },
+    {
+      "key": "AC-901",
+      "title": "Deliver M9 Domain and Kernel Runtime v1",
+      "milestone": "M9 Domain and Kernel Runtime v1",
+      "labels": [
+        "type:epic",
+        "area:kernel",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-801"],
+      "body": "Outcome:\\nImplement the first real deterministic kernel, ledger persistence, reducer, replay flow, and projection seed over the canonical domain model.\\n\\nValidation:\\nGolden traces execute against real kernel code and the historical loop class is covered by replay tests."
+    },
+    {
+      "key": "AC-1001",
+      "title": "Deliver M10 Orchestration and Execution Plane v1",
+      "milestone": "M10 Orchestration and Execution Plane v1",
+      "labels": [
+        "type:epic",
+        "area:runtime",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-901"],
+      "body": "Outcome:\\nImplement planning, scheduling, leases, retries, execution packets, validators, workers, and the first bounded tool pack.\\n\\nValidation:\\nAn objective can become a work item, dispatch to a worker, validate output, and end in complete, blocked, or escalated state."
+    },
+    {
+      "key": "AC-1101",
+      "title": "Deliver M11 GitHub Backbone Runtime",
+      "milestone": "M11 GitHub Backbone Runtime",
+      "labels": [
+        "type:epic",
+        "area:github",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-901", "AC-1001"],
+      "body": "Outcome:\\nImplement the GitHub App, webhook processing, outbound sync, inbound reconciliation, and drift detection against the live runtime.\\n\\nValidation:\\nGitHub reflects runtime truth for humans without becoming the source of truth."
+    },
+    {
+      "key": "AC-1201",
+      "title": "Deliver M12 Control Plane MVP",
+      "milestone": "M12 Control Plane MVP",
+      "labels": [
+        "type:epic",
+        "area:api",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-901", "AC-1001", "AC-1101"],
+      "body": "Outcome:\\nImplement the control-plane backend and operator web UI with auth, sessions, timelines, approvals, and control actions.\\n\\nValidation:\\nAn operator can use the web app to inspect and control real runtime activity."
+    },
+    {
+      "key": "AC-1301",
+      "title": "Deliver M13 Memory and Provenance v1",
+      "milestone": "M13 Memory and Provenance v1",
+      "labels": [
+        "type:epic",
+        "area:memory",
+        "P1",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-901", "AC-1001", "AC-1101"],
+      "body": "Outcome:\\nImplement memory extraction, retrieval, invalidation, provenance, and contamination guards over runtime and GitHub evidence.\\n\\nValidation:\\nMemory improves continuity while remaining auditable and bounded."
+    },
+    {
+      "key": "AC-1401",
+      "title": "Deliver M14 Customer Foundations",
+      "milestone": "M14 Customer Foundations",
+      "labels": [
+        "type:epic",
+        "area:release",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1201"],
+      "body": "Outcome:\\nImplement multi-company isolation, invitations, customer onboarding, per-company config and secrets, multi-repo support, and self-hosted packaging foundations.\\n\\nValidation:\\nA second company can onboard without cross-tenant contamination in hosted or self-hosted mode."
+    },
+    {
+      "key": "AC-1501",
+      "title": "Deliver M15 Production Infrastructure and Reliability",
+      "milestone": "M15 Production Infrastructure and Reliability",
+      "labels": [
+        "type:epic",
+        "area:release",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1201", "AC-1401"],
+      "body": "Outcome:\\nStand up AWS hosted infrastructure, observability, backups, restore drills, and reliability controls, plus supported self-hosted infrastructure contracts.\\n\\nValidation:\\nStaging and production exist and are operationally recoverable."
+    },
+    {
+      "key": "AC-1601",
+      "title": "Deliver M16 Internal Alpha and Controlled Beta",
+      "milestone": "M16 Internal Alpha and Controlled Beta",
+      "labels": [
+        "type:epic",
+        "area:release",
+        "P1",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1501"],
+      "body": "Outcome:\\nRun internal alpha and controlled external beta with release candidates, rollback drills, and stability hardening.\\n\\nValidation:\\nThe platform runs with real users under measured SLOs before GA."
+    },
+    {
+      "key": "AC-1701",
+      "title": "Deliver M17 General Availability",
+      "milestone": "M17 General Availability",
+      "labels": [
+        "type:epic",
+        "area:release",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1601"],
+      "body": "Outcome:\\nClose the final production readiness gap, restore hard GitHub protections, publish hosted and self-hosted docs, and open general availability.\\n\\nValidation:\\nThe product is supportable, protected, and customer-ready for GA."
+    }
+  ]
+}

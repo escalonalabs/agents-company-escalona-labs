@@ -1,0 +1,126 @@
+:root {
+  color-scheme: light;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: #17355f;
+  background: radial-gradient(
+      circle at top,
+      rgba(113, 201, 255, 0.2),
+      transparent 40%
+    ), linear-gradient(180deg, #eef6fb 0%, #f8fbfd 100%);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  width: min(1120px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0 5rem;
+}
+
+.hero {
+  max-width: 760px;
+  margin-bottom: 2rem;
+}
+
+.hero__kicker,
+.ui-card__eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #356fa8;
+}
+
+.hero__title {
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.hero__summary {
+  margin: 1.25rem 0 0;
+  max-width: 54rem;
+  font-size: 1.1rem;
+  color: rgba(23, 53, 95, 0.82);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ui-card {
+  padding: 1.4rem;
+  border: 1px solid rgba(53, 111, 168, 0.16);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 48px -32px rgba(23, 53, 95, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.ui-card__header {
+  margin-bottom: 0.85rem;
+}
+
+.ui-card__heading {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.1;
+}
+
+.ui-card__body p {
+  margin: 0;
+  color: rgba(23, 53, 95, 0.8);
+}
+
+.status-card {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #17355f, #356fa8);
+  color: #eef6fb;
+}
+
+.status-card .ui-card__eyebrow,
+.status-card .ui-card__body p {
+  color: rgba(238, 246, 251, 0.82);
+}
+
+.status-card .ui-card__heading {
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: min(100vw - 1.25rem, 1120px);
+    padding: 3rem 0 4rem;
+  }
+
+  .hero__summary {
+    font-size: 1rem;
+  }
+}
