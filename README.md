@@ -91,6 +91,19 @@ For the first bootstrapped operator and first company flow, plus the required
 environment variables and Helm foundation, see
 [docs/operations/self-hosted.md](docs/operations/self-hosted.md).
 
+## Hosted AWS Foundation
+
+The repository now also contains the `M15` hosted infrastructure scaffold:
+
+- versioned Terraform under [`infra/aws/`](infra/aws)
+- hardened Helm values for staging and production
+- Dockerized validation scripts for Helm and Terraform
+
+Primary references:
+
+- [docs/operations/hosted-aws.md](docs/operations/hosted-aws.md)
+- [infra/aws/README.md](infra/aws/README.md)
+
 ## Validation
 
 Run the repository guardrails locally:
@@ -99,6 +112,7 @@ Run the repository guardrails locally:
 pnpm check:repo
 pnpm check:replay
 pnpm ci
+pnpm ops:validate:m15
 ```
 
 ## Security

@@ -1,0 +1,43 @@
+environment = "staging"
+
+aws_region           = "us-east-1"
+kubernetes_namespace = "agents-company-staging"
+
+vpc_id             = "vpc-0123456789abcdef0"
+vpc_cidr_block     = "10.20.0.0/16"
+private_subnet_ids = ["subnet-aaaaaaaaaaaaaaaaa", "subnet-bbbbbbbbbbbbbbbbb"]
+public_subnet_ids  = ["subnet-ccccccccccccccccc", "subnet-ddddddddddddddddd"]
+
+eks_public_access_cidrs = ["203.0.113.0/24"]
+
+node_instance_types = ["t3.large"]
+node_desired_size   = 2
+node_min_size       = 2
+node_max_size       = 4
+
+db_instance_class          = "db.t4g.medium"
+db_allocated_storage       = 100
+db_backup_retention_days   = 7
+db_multi_az                = true
+db_skip_final_snapshot     = false
+artifact_bucket_name       = "agents-company-staging-artifacts"
+service_account_names      = ["agents-company-control-plane", "agents-company-github-app"]
+
+mail_smtp_url       = "smtp://smtp-user:smtp-password@email-smtp.us-east-1.amazonaws.com:587"
+mail_from           = "Agents Company <no-reply@staging.agents-company.escalonalabs.com>"
+ses_sender_email    = "no-reply@staging.agents-company.escalonalabs.com"
+session_secret      = "replace-with-long-random-session-secret"
+internal_api_token  = "replace-with-long-random-internal-token"
+github_app_id       = "123456"
+github_webhook_secret = "replace-with-github-webhook-secret"
+github_private_key  = <<EOF
+-----BEGIN PRIVATE KEY-----
+replace-with-staging-github-app-private-key
+-----END PRIVATE KEY-----
+EOF
+
+tags = {
+  Project     = "agents-company"
+  Environment = "staging"
+  ManagedBy   = "terraform"
+}

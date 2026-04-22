@@ -293,27 +293,27 @@ resource "aws_db_subnet_group" "postgres" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier                     = "${local.effective_name_prefix}-postgres"
-  db_name                        = var.db_name
-  username                       = var.db_username
-  password                       = var.db_password
-  instance_class                 = var.db_instance_class
-  allocated_storage              = var.db_allocated_storage
-  storage_encrypted              = true
-  engine                         = "postgres"
-  engine_version                 = var.db_engine_version
-  auto_minor_version_upgrade     = true
-  backup_retention_period        = var.db_backup_retention_days
-  delete_automated_backups       = false
-  db_subnet_group_name           = aws_db_subnet_group.postgres.name
-  vpc_security_group_ids         = [aws_security_group.rds.id]
-  multi_az                       = var.db_multi_az
-  apply_immediately              = false
-  copy_tags_to_snapshot          = true
-  deletion_protection            = var.environment == "production"
-  skip_final_snapshot            = var.db_skip_final_snapshot
-  performance_insights_enabled   = var.environment == "production"
-  publicly_accessible            = false
+  identifier                          = "${local.effective_name_prefix}-postgres"
+  db_name                             = var.db_name
+  username                            = var.db_username
+  password                            = var.db_password
+  instance_class                      = var.db_instance_class
+  allocated_storage                   = var.db_allocated_storage
+  storage_encrypted                   = true
+  engine                              = "postgres"
+  engine_version                      = var.db_engine_version
+  auto_minor_version_upgrade          = true
+  backup_retention_period             = var.db_backup_retention_days
+  delete_automated_backups            = false
+  db_subnet_group_name                = aws_db_subnet_group.postgres.name
+  vpc_security_group_ids              = [aws_security_group.rds.id]
+  multi_az                            = var.db_multi_az
+  apply_immediately                   = false
+  copy_tags_to_snapshot               = true
+  deletion_protection                 = var.environment == "production"
+  skip_final_snapshot                 = var.db_skip_final_snapshot
+  performance_insights_enabled        = var.environment == "production"
+  publicly_accessible                 = false
   iam_database_authentication_enabled = false
 
   tags = local.common_tags
@@ -329,26 +329,26 @@ resource "aws_secretsmanager_secret_version" "runtime" {
   secret_id = aws_secretsmanager_secret.runtime.id
 
   secret_string = jsonencode({
-    AGENTS_COMPANY_NODE_ENV             = "production"
-    AGENTS_COMPANY_APP_URL              = "https://${var.environment == "production" ? "agents-company.escalonalabs.com" : "staging.agents-company.escalonalabs.com"}"
-    AGENTS_COMPANY_DATABASE_URL         = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.postgres.address}:5432/${var.db_name}"
-    AGENTS_COMPANY_STORAGE_ENDPOINT     = "https://s3.${var.aws_region}.amazonaws.com"
-    AGENTS_COMPANY_STORAGE_REGION       = var.aws_region
-    AGENTS_COMPANY_STORAGE_BUCKET       = aws_s3_bucket.artifacts.bucket
-    AGENTS_COMPANY_STORAGE_ACCESS_KEY   = "use-irsa"
-    AGENTS_COMPANY_STORAGE_SECRET_KEY   = "use-irsa"
+    AGENTS_COMPANY_NODE_ENV                 = "production"
+    AGENTS_COMPANY_APP_URL                  = "https://${var.environment == "production" ? "agents-company.escalonalabs.com" : "staging.agents-company.escalonalabs.com"}"
+    AGENTS_COMPANY_DATABASE_URL             = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.postgres.address}:5432/${var.db_name}"
+    AGENTS_COMPANY_STORAGE_ENDPOINT         = "https://s3.${var.aws_region}.amazonaws.com"
+    AGENTS_COMPANY_STORAGE_REGION           = var.aws_region
+    AGENTS_COMPANY_STORAGE_BUCKET           = aws_s3_bucket.artifacts.bucket
+    AGENTS_COMPANY_STORAGE_ACCESS_KEY       = "use-irsa"
+    AGENTS_COMPANY_STORAGE_SECRET_KEY       = "use-irsa"
     AGENTS_COMPANY_STORAGE_FORCE_PATH_STYLE = "false"
-    AGENTS_COMPANY_MAIL_SMTP_URL        = var.mail_smtp_url
-    AGENTS_COMPANY_MAIL_FROM            = var.mail_from
-    AGENTS_COMPANY_MAIL_UI_URL          = ""
-    AGENTS_COMPANY_SESSION_SECRET       = var.session_secret
-    AGENTS_COMPANY_SESSION_TTL_HOURS    = "168"
-    AGENTS_COMPANY_INVITATION_TTL_HOURS = "168"
-    AGENTS_COMPANY_INTERNAL_API_TOKEN   = var.internal_api_token
-    AGENTS_COMPANY_GITHUB_APP_ID        = var.github_app_id
-    AGENTS_COMPANY_GITHUB_WEBHOOK_SECRET = var.github_webhook_secret
-    AGENTS_COMPANY_GITHUB_PRIVATE_KEY   = var.github_private_key
-    AGENTS_COMPANY_GITHUB_API_BASE_URL  = var.github_api_base_url
+    AGENTS_COMPANY_MAIL_SMTP_URL            = var.mail_smtp_url
+    AGENTS_COMPANY_MAIL_FROM                = var.mail_from
+    AGENTS_COMPANY_MAIL_UI_URL              = ""
+    AGENTS_COMPANY_SESSION_SECRET           = var.session_secret
+    AGENTS_COMPANY_SESSION_TTL_HOURS        = "168"
+    AGENTS_COMPANY_INVITATION_TTL_HOURS     = "168"
+    AGENTS_COMPANY_INTERNAL_API_TOKEN       = var.internal_api_token
+    AGENTS_COMPANY_GITHUB_APP_ID            = var.github_app_id
+    AGENTS_COMPANY_GITHUB_WEBHOOK_SECRET    = var.github_webhook_secret
+    AGENTS_COMPANY_GITHUB_PRIVATE_KEY       = var.github_private_key
+    AGENTS_COMPANY_GITHUB_API_BASE_URL      = var.github_api_base_url
   })
 }
 

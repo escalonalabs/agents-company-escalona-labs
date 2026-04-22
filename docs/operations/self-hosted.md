@@ -187,6 +187,12 @@ Automated compose validation:
 pnpm smoke:self-hosted
 ```
 
+Recovery drill on the live compose stack:
+
+```bash
+pnpm ops:drill:compose-recovery
+```
+
 For a clean-room bootstrap validation:
 
 ```bash
@@ -294,3 +300,17 @@ BACKUP_FILE=/tmp/agents-company-backups/agents-company-postgres-20260422T223500Z
   RESTORE_DRILL_DB=agents_company_restore_verify \
   pnpm ops:restore-drill:postgres
 ```
+
+## M15 validation bundle
+
+Hosted and self-hosted infrastructure validation that ships in-repo:
+
+```bash
+pnpm ops:validate:helm
+pnpm ops:validate:aws-infra
+pnpm ops:drill:compose-recovery
+```
+
+Hosted AWS guidance and Terraform examples live in
+[docs/operations/hosted-aws.md](./hosted-aws.md) and
+[infra/aws/README.md](../../infra/aws/README.md).

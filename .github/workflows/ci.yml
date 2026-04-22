@@ -43,6 +43,30 @@ jobs:
       - name: Build
         run: pnpm build
 
+  ops-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate M15 assets
+        run: pnpm ops:validate:m15
+
   bootstrap-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -157,3 +181,6 @@ jobs:
 
       - name: Self-hosted compose smoke
         run: pnpm smoke:self-hosted
+
+      - name: Compose recovery drill
+        run: pnpm ops:drill:compose-recovery
