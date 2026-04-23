@@ -32,7 +32,7 @@ controlPlane:
   replicaCount: 3
   image:
     repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-production/control-plane
-    tag: production
+    tag: v0.1.0
   serviceAccount:
     create: true
     name: agents-company-control-plane
@@ -78,7 +78,7 @@ githubApp:
   replicaCount: 3
   image:
     repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-production/github-app
-    tag: production
+    tag: v0.1.0
   serviceAccount:
     create: true
     name: agents-company-github-app
@@ -117,7 +117,7 @@ controlWeb:
   replicaCount: 3
   image:
     repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-production/control-web
-    tag: production
+    tag: v0.1.0
   autoscaling:
     enabled: true
     minReplicas: 3

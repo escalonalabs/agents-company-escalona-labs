@@ -397,7 +397,7 @@ resource "aws_ses_email_identity" "sender" {
 
 resource "aws_ecr_repository" "control_plane" {
   name                 = "${local.effective_name_prefix}/control-plane"
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
@@ -408,7 +408,7 @@ resource "aws_ecr_repository" "control_plane" {
 
 resource "aws_ecr_repository" "github_app" {
   name                 = "${local.effective_name_prefix}/github-app"
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
@@ -419,7 +419,7 @@ resource "aws_ecr_repository" "github_app" {
 
 resource "aws_ecr_repository" "control_web" {
   name                 = "${local.effective_name_prefix}/control-web"
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true

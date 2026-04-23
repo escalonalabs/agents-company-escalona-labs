@@ -1,0 +1,372 @@
+name: hosted-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Hosted target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: "Immutable release version or tag. Example: v0.1.0"
+        required: true
+        type: string
+      ref:
+        description: "Git ref to deploy. Defaults to refs/tags/<version> when empty."
+        required: false
+        type: string
+      apply_infra:
+        description: "Apply Terraform before building and deploying"
+        required: false
+        default: true
+        type: boolean
+      verify_public_url:
+        description: "Verify the public environment URL after rollout"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve checkout ref
+        id: meta
+        shell: bash
+        run: |
+          VERSION_INPUT="${{ inputs.version }}"
+          if [[ "$VERSION_INPUT" != v* ]]; then
+            VERSION_TAG="v$VERSION_INPUT"
+          else
+            VERSION_TAG="$VERSION_INPUT"
+          fi
+
+          REF_INPUT="${{ inputs.ref }}"
+          if [[ -n "$REF_INPUT" ]]; then
+            CHECKOUT_REF="$REF_INPUT"
+          else
+            CHECKOUT_REF="$VERSION_TAG"
+          fi
+
+          echo "version_tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
+          echo "checkout_ref=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.checkout_ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate hosted readiness assets
+        run: |
+          pnpm ops:validate:m15
+          pnpm release:evidence -- --version "${{ steps.meta.outputs.version_tag }}" --release-branch "release/${{ steps.meta.outputs.version_tag }}"
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      DEPLOY_ENV: ${{ inputs.environment }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      KUBERNETES_NAMESPACE: ${{ vars.KUBERNETES_NAMESPACE }}
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      TF_VARS: ${{ secrets.TF_VARS }}
+      TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
+      TF_BACKEND_KEY: ${{ secrets.TF_BACKEND_KEY }}
+      TF_BACKEND_DYNAMODB_TABLE: ${{ secrets.TF_BACKEND_DYNAMODB_TABLE }}
+    steps:
+      - name: Resolve deploy metadata
+        id: meta
+        shell: bash
+        run: |
+          VERSION_INPUT="${{ inputs.version }}"
+          if [[ "$VERSION_INPUT" != v* ]]; then
+            VERSION_TAG="v$VERSION_INPUT"
+          else
+            VERSION_TAG="$VERSION_INPUT"
+          fi
+
+          REF_INPUT="${{ inputs.ref }}"
+          if [[ -n "$REF_INPUT" ]]; then
+            CHECKOUT_REF="$REF_INPUT"
+          else
+            CHECKOUT_REF="$VERSION_TAG"
+          fi
+
+          case "${{ inputs.environment }}" in
+            production)
+              DEFAULT_URL="https://agents-company.escalonalabs.com"
+              ;;
+            staging)
+              DEFAULT_URL="https://staging.agents-company.escalonalabs.com"
+              ;;
+            *)
+              echo "Unsupported environment '${{ inputs.environment }}'." >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ -n "${KUBERNETES_NAMESPACE:-}" ]]; then
+            TARGET_NAMESPACE="$KUBERNETES_NAMESPACE"
+          else
+            TARGET_NAMESPACE="agents-company-${{ inputs.environment }}"
+          fi
+
+          echo "version_tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
+          echo "checkout_ref=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
+          echo "target_namespace=$TARGET_NAMESPACE" >> "$GITHUB_OUTPUT"
+          echo "public_url=$DEFAULT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify environment configuration
+        shell: bash
+        run: |
+          missing=()
+          [[ -n "${AWS_ROLE_TO_ASSUME:-}" ]] || missing+=("AWS_ROLE_TO_ASSUME")
+          [[ -n "${AWS_REGION:-}" ]] || missing+=("AWS_REGION")
+          [[ -n "${TF_VARS:-}" ]] || missing+=("TF_VARS")
+          [[ -n "${TF_BACKEND_BUCKET:-}" ]] || missing+=("TF_BACKEND_BUCKET")
+          [[ -n "${TF_BACKEND_KEY:-}" ]] || missing+=("TF_BACKEND_KEY")
+
+          if (( ${#missing[@]} > 0 )); then
+            printf 'Missing required environment configuration: %s\n' "${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.checkout_ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: hosted-deploy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.33.0
+
+      - name: Write Terraform variables file
+        shell: bash
+        run: |
+          cat <<'EOF' > "$RUNNER_TEMP/terraform.tfvars"
+          ${{ env.TF_VARS }}
+          EOF
+
+      - name: Terraform init
+        shell: bash
+        run: |
+          init_args=(
+            -chdir=infra/aws
+            init
+            -input=false
+            -backend-config="bucket=${TF_BACKEND_BUCKET}"
+            -backend-config="key=${TF_BACKEND_KEY}"
+            -backend-config="region=${AWS_REGION}"
+            -backend-config="encrypt=true"
+          )
+
+          if [[ -n "${TF_BACKEND_DYNAMODB_TABLE:-}" ]]; then
+            init_args+=(-backend-config="dynamodb_table=${TF_BACKEND_DYNAMODB_TABLE}")
+          fi
+
+          terraform "${init_args[@]}"
+
+      - name: Terraform plan
+        shell: bash
+        run: |
+          terraform -chdir=infra/aws plan \
+            -input=false \
+            -var-file="$RUNNER_TEMP/terraform.tfvars" \
+            -out="$RUNNER_TEMP/terraform.plan"
+
+      - name: Terraform apply
+        if: ${{ inputs.apply_infra }}
+        shell: bash
+        run: |
+          terraform -chdir=infra/aws apply -input=false -auto-approve "$RUNNER_TEMP/terraform.plan"
+
+      - name: Capture Terraform outputs
+        id: tf_outputs
+        shell: bash
+        run: |
+          terraform -chdir=infra/aws output -json > "$RUNNER_TEMP/terraform-outputs.json"
+
+          CONTROL_PLANE_REPO="$(jq -r '.ecr_repositories.value.control_plane' "$RUNNER_TEMP/terraform-outputs.json")"
+          GITHUB_APP_REPO="$(jq -r '.ecr_repositories.value.github_app' "$RUNNER_TEMP/terraform-outputs.json")"
+          CONTROL_WEB_REPO="$(jq -r '.ecr_repositories.value.control_web' "$RUNNER_TEMP/terraform-outputs.json")"
+          CLUSTER_NAME="$(jq -r '.cluster_name.value' "$RUNNER_TEMP/terraform-outputs.json")"
+          RUNTIME_IRSA_ROLE_ARN="$(jq -r '.runtime_irsa_role_arn.value' "$RUNNER_TEMP/terraform-outputs.json")"
+          RUNTIME_SECRET_NAME="$(jq -r '.helm_runtime_secret_name.value' "$RUNNER_TEMP/terraform-outputs.json")"
+          RUNTIME_SECRET_REMOTE_KEY="$(jq -r '.helm_values_hint.value.runtime_secret_remote_key' "$RUNNER_TEMP/terraform-outputs.json")"
+
+          {
+            echo "control_plane_repo=$CONTROL_PLANE_REPO"
+            echo "github_app_repo=$GITHUB_APP_REPO"
+            echo "control_web_repo=$CONTROL_WEB_REPO"
+            echo "cluster_name=$CLUSTER_NAME"
+            echo "runtime_irsa_role_arn=$RUNTIME_IRSA_ROLE_ARN"
+            echo "runtime_secret_name=$RUNTIME_SECRET_NAME"
+            echo "runtime_secret_remote_key=$RUNTIME_SECRET_REMOTE_KEY"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push control-plane
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.control-plane
+          push: true
+          tags: ${{ steps.tf_outputs.outputs.control_plane_repo }}:${{ steps.meta.outputs.version_tag }}
+
+      - name: Build and push github-app
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.github-app
+          push: true
+          tags: ${{ steps.tf_outputs.outputs.github_app_repo }}:${{ steps.meta.outputs.version_tag }}
+
+      - name: Build and push control-web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.control-web
+          push: true
+          tags: ${{ steps.tf_outputs.outputs.control_web_repo }}:${{ steps.meta.outputs.version_tag }}
+
+      - name: Update kubeconfig
+        shell: bash
+        run: |
+          aws eks update-kubeconfig \
+            --name "${{ steps.tf_outputs.outputs.cluster_name }}" \
+            --region "$AWS_REGION"
+
+      - name: Verify cluster prerequisites
+        shell: bash
+        run: |
+          kubectl get crd externalsecrets.external-secrets.io
+          kubectl get clustersecretstore aws-secretsmanager
+          aws secretsmanager describe-secret --secret-id "${{ steps.tf_outputs.outputs.runtime_secret_remote_key }}" >/dev/null
+
+      - name: Render hosted overrides
+        shell: bash
+        run: |
+          cat <<EOF > "$RUNNER_TEMP/hosted-overrides.yaml"
+          runtimeSecret:
+            existingSecretName: ${{ steps.tf_outputs.outputs.runtime_secret_name }}
+            externalSecret:
+              remoteSecretKey: ${{ steps.tf_outputs.outputs.runtime_secret_remote_key }}
+          controlPlane:
+            image:
+              repository: ${{ steps.tf_outputs.outputs.control_plane_repo }}
+              tag: ${{ steps.meta.outputs.version_tag }}
+            serviceAccount:
+              annotations:
+                eks.amazonaws.com/role-arn: ${{ steps.tf_outputs.outputs.runtime_irsa_role_arn }}
+          githubApp:
+            image:
+              repository: ${{ steps.tf_outputs.outputs.github_app_repo }}
+              tag: ${{ steps.meta.outputs.version_tag }}
+            serviceAccount:
+              annotations:
+                eks.amazonaws.com/role-arn: ${{ steps.tf_outputs.outputs.runtime_irsa_role_arn }}
+          controlWeb:
+            image:
+              repository: ${{ steps.tf_outputs.outputs.control_web_repo }}
+              tag: ${{ steps.meta.outputs.version_tag }}
+          EOF
+
+      - name: Deploy Helm release
+        shell: bash
+        run: |
+          helm upgrade --install agents-company ./charts/agents-company \
+            --namespace "${{ steps.meta.outputs.target_namespace }}" \
+            --create-namespace \
+            -f "./charts/agents-company/values-${{ inputs.environment }}.yaml" \
+            -f "$RUNNER_TEMP/hosted-overrides.yaml" \
+            --wait \
+            --timeout 15m
+
+      - name: Verify rollout state
+        shell: bash
+        run: |
+          kubectl rollout status deployment/agents-company-control-plane -n "${{ steps.meta.outputs.target_namespace }}" --timeout=10m
+          kubectl rollout status deployment/agents-company-github-app -n "${{ steps.meta.outputs.target_namespace }}" --timeout=10m
+          kubectl rollout status deployment/agents-company-control-web -n "${{ steps.meta.outputs.target_namespace }}" --timeout=10m
+
+      - name: Verify public endpoint
+        if: ${{ inputs.verify_public_url }}
+        shell: bash
+        run: |
+          curl --fail --show-error --silent \
+            --retry 12 \
+            --retry-delay 10 \
+            "${{ steps.meta.outputs.public_url }}/web-health"
+
+      - name: Publish deployment summary
+        shell: bash
+        run: |
+          {
+            echo "## Hosted Deploy"
+            echo ""
+            echo "- Environment: ${{ inputs.environment }}"
+            echo "- Version: ${{ steps.meta.outputs.version_tag }}"
+            echo "- Ref: ${{ steps.meta.outputs.checkout_ref }}"
+            echo "- Namespace: ${{ steps.meta.outputs.target_namespace }}"
+            echo "- Cluster: ${{ steps.tf_outputs.outputs.cluster_name }}"
+            echo "- Public URL: ${{ steps.meta.outputs.public_url }}"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -3,6 +3,7 @@ export * from './drift';
 export * from './metadata';
 export * from './projections';
 export * from './reconciliation';
+export * from './releaseReadiness';
 export * from './sync';
 export * from './transport';
 export * from './types';

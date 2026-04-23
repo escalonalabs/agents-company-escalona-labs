@@ -1,6 +1,6 @@
 {
   "name": "agents-company",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -37,6 +37,7 @@
     "smoke:customer-foundations": "pnpm --filter @escalonalabs/control-plane exec tsx ../../scripts/smoke-customer-foundations.ts",
     "smoke:self-hosted": "pnpm --filter @escalonalabs/control-plane exec tsx ../../scripts/smoke-self-hosted.ts",
     "smoke:bootstrap": "pnpm db:migrate && pnpm db:seed && pnpm smoke:control-plane && pnpm smoke:memory",
+    "release:evidence": "pnpm exec tsx scripts/build-release-evidence.ts",
     "ops:backup:postgres": "bash scripts/ops/backup-postgres.sh",
     "ops:restore-drill:postgres": "bash scripts/ops/restore-drill-postgres.sh",
     "ops:drill:compose-recovery": "bash scripts/ops/drill-compose-recovery.sh",

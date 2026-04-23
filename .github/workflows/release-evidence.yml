@@ -1,0 +1,84 @@
+name: release-evidence
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version or tag. Example: v0.1.0
+        required: true
+        type: string
+      release_branch:
+        description: Release branch name. Example: release/v0.1.0
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+  checks: read
+  actions: read
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve release metadata
+        id: release_meta
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION_INPUT="${{ inputs.version }}"
+            BRANCH_INPUT="${{ inputs.release_branch }}"
+          else
+            VERSION_INPUT="${{ github.event.release.tag_name }}"
+            BRANCH_INPUT="${{ github.event.release.target_commitish }}"
+          fi
+
+          if [[ "$VERSION_INPUT" != v* ]]; then
+            VERSION_TAG="v$VERSION_INPUT"
+          else
+            VERSION_TAG="$VERSION_INPUT"
+          fi
+
+          if [[ -z "$BRANCH_INPUT" ]]; then
+            BRANCH_INPUT="release/$VERSION_TAG"
+          fi
+
+          echo "version_tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
+          echo "release_branch=$BRANCH_INPUT" >> "$GITHUB_OUTPUT"
+
+      - name: Build release evidence
+        run: >
+          pnpm exec tsx scripts/build-release-evidence.ts
+          --repo "${{ github.repository }}"
+          --version "${{ steps.release_meta.outputs.version_tag }}"
+          --release-branch "${{ steps.release_meta.outputs.release_branch }}"
+          --output-dir "artifacts/releases/${{ steps.release_meta.outputs.version_tag }}"
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence-${{ steps.release_meta.outputs.version_tag }}
+          path: artifacts/releases/${{ steps.release_meta.outputs.version_tag }}

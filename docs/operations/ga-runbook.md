@@ -23,6 +23,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm ops:validate:m15
+pnpm release:evidence -- --version v0.1.0 --release-branch release/v0.1.0
 ```
 
 Confirm the following operational assets are healthy:
@@ -38,10 +39,10 @@ Confirm the following operational assets are healthy:
 
 1. Cut or update the target `release/*` branch.
 2. Confirm every required check is green.
-3. Deploy to staging and run operator smoke tests.
+3. Dispatch `.github/workflows/hosted-deploy.yml` to `staging` and run operator smoke tests.
 4. Confirm webhook delivery and artifact flow in staging.
 5. Review rollback target and launch ownership.
-6. Deploy the same candidate to production.
+6. Promote the same candidate through `.github/workflows/hosted-deploy.yml` to `production`.
 7. Tag the production commit and publish release notes.
 
 ## Immediate post-launch watch
