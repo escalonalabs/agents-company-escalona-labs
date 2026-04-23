@@ -39,10 +39,10 @@ Confirm the following operational assets are healthy:
 
 1. Cut or update the target `release/*` branch.
 2. Confirm every required check is green.
-3. Deploy to staging and run operator smoke tests.
+3. Dispatch `.github/workflows/hosted-deploy.yml` to `staging` and run operator smoke tests.
 4. Confirm webhook delivery and artifact flow in staging.
 5. Review rollback target and launch ownership.
-6. Deploy the same candidate to production.
+6. Promote the same candidate through `.github/workflows/hosted-deploy.yml` to `production`.
 7. Tag the production commit and publish release notes.
 
 ## Immediate post-launch watch

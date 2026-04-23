@@ -50,6 +50,50 @@ values together before rollout.
    it differs from the examples.
 6. Deploy the Helm chart into the target namespace.
 
+## GitHub Actions deployment path
+
+The repository now ships a manual hosted deployment workflow:
+
+- [`.github/workflows/hosted-deploy.yml`](../../.github/workflows/hosted-deploy.yml)
+
+Use one GitHub environment per hosted target:
+
+- `staging`
+- `production`
+
+Configure these values on each environment before dispatching the workflow:
+
+| Name | Type | Purpose |
+| --- | --- | --- |
+| `AWS_ROLE_TO_ASSUME` | secret | IAM role assumed through GitHub OIDC for Terraform, ECR, EKS, and Secrets Manager access |
+| `TF_VARS` | secret | Full multiline contents of the target `tfvars` file |
+| `TF_BACKEND_BUCKET` | secret | S3 bucket used for Terraform remote state |
+| `TF_BACKEND_KEY` | secret | Object key for the environment Terraform state |
+| `TF_BACKEND_DYNAMODB_TABLE` | secret, optional | DynamoDB table for Terraform state locking |
+| `AWS_REGION` | variable | AWS region for the environment |
+| `KUBERNETES_NAMESPACE` | variable, optional | Helm target namespace, defaults to `agents-company-<environment>` |
+
+The workflow performs this sequence:
+
+1. Validate the repository and hosted assets.
+2. Assume the environment IAM role through OIDC.
+3. Initialize Terraform with the remote backend and apply the target `tfvars`.
+4. Read Terraform outputs for the ECR repositories, cluster, and runtime secret.
+5. Build and push the three immutable release images to ECR.
+6. Update the EKS kubeconfig, verify `ExternalSecret` prerequisites, and run
+   `helm upgrade --install`.
+7. Wait for the three runtime deployments to become ready and verify the public
+   health endpoint.
+
+Dispatch example:
+
+```text
+workflow: hosted-deploy
+environment: production
+version: v0.1.0
+ref: release/v0.1.0
+```
+
 ## GitHub webhook path
 
 Hosted ingress is intentionally single-origin through `control-web`.
@@ -105,11 +149,12 @@ actual AWS account, EKS cluster, and GitHub App installation.
 This repository now validates the infrastructure contract and deployment assets,
 but it cannot prove hosted production is live without:
 
-- AWS credentials
-- an actual EKS cluster
+- environment-level GitHub secrets and variables for the deploy workflow
+- an AWS account reachable through the configured OIDC role
+- a real EKS cluster
 - External Secrets Operator installed
 - a real GitHub App installation
-- pushed images in the target ECR repositories
+- successful image pushes into the target ECR repositories
 
 So `M15` can be repo-ready and operationally rehearsable here, but final hosted
 go-live still depends on those environment-specific steps.
