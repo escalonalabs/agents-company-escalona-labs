@@ -10,7 +10,7 @@
     "pnpm": ">=10.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.4.12",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.15.6",
     "pg": "^8.20.0",
