@@ -19,6 +19,8 @@ This directory contains the versioned hosted deployment scaffold for
 
 - Existing VPC and subnets
 - AWS credentials with permission to create the resources above
+- Existing S3 bucket for Terraform remote state
+- Optional DynamoDB table for Terraform state locking
 - External Secrets Operator installed in the target EKS cluster
 - A `ClusterSecretStore` or `SecretStore` that can read the runtime secret from
   AWS Secrets Manager
@@ -66,10 +68,19 @@ That command uses a Dockerized Terraform toolchain to run:
 cp infra/aws/staging.tfvars.example /tmp/agents-company-staging.tfvars
 # fill in real VPC ids, subnet ids, secrets, and GitHub App values
 
-terraform -chdir=infra/aws init
+terraform -chdir=infra/aws init \
+  -backend-config="bucket=<existing-terraform-state-bucket>" \
+  -backend-config="key=agents-company/staging.tfstate" \
+  -backend-config="region=us-east-1" \
+  -backend-config="encrypt=true" \
+  -backend-config="dynamodb_table=<optional-lock-table>"
 terraform -chdir=infra/aws plan -var-file=/tmp/agents-company-staging.tfvars
 terraform -chdir=infra/aws apply -var-file=/tmp/agents-company-staging.tfvars
 ```
+
+The hosted GitHub Actions workflow uses the same backend inputs through the
+environment secrets `TF_BACKEND_BUCKET`, `TF_BACKEND_KEY`, and the optional
+`TF_BACKEND_DYNAMODB_TABLE`.
 
 ## Important outputs
 
