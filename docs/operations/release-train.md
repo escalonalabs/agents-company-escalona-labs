@@ -55,7 +55,11 @@ Both protected branch surfaces also require:
    - backup and restore drill confirmation
    - operator smoke through `control-web`
    - self-hosted install or upgrade smoke
-6. Tag the approved commit and publish the release artifact set.
+6. Generate the release evidence bundle from the candidate branch.
+7. Tag the approved commit with an immutable semver tag and publish the release artifact set.
+
+Mutable aliases such as `staging` or `production` are not release artifacts.
+Staging and production values files must point to immutable semver tags only.
 
 ## Hotfix policy
 
