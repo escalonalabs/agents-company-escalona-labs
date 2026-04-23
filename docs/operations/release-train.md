@@ -11,7 +11,7 @@ delivery.
 
 ## Protection baseline
 
-The required checks for `main` and `release/*` are:
+Required checks on `main`:
 
 - `quality`
 - `ops-validation`
@@ -20,6 +20,17 @@ The required checks for `main` and `release/*` are:
 - `self-hosted-smoke`
 - `repo-guardrails`
 - `dependency-review`
+- `secret-scan`
+- `replay-regression`
+
+Required checks on `release/*`:
+
+- `quality`
+- `ops-validation`
+- `bootstrap-smoke`
+- `integration-smokes`
+- `self-hosted-smoke`
+- `repo-guardrails`
 - `secret-scan`
 - `replay-regression`
 

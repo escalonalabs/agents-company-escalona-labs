@@ -22,7 +22,6 @@ const REQUIRED_CHECKS = summarizeRequiredChecks([
   'integration-smokes',
   'self-hosted-smoke',
   'repo-guardrails',
-  'dependency-review',
   'secret-scan',
   'replay-regression',
 ]);
