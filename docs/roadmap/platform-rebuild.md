@@ -24,6 +24,7 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 - `M15 Production Infrastructure and Reliability`
 - `M16 Internal Alpha and Controlled Beta`
 - `M17 General Availability`
+- `M18 Launch Evidence and Activation`
 
 ## Non-negotiables
 
@@ -157,6 +158,13 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 - Support and release discipline are explicit
 - Product is customer-ready for GA
 
+### M18 Launch Evidence and Activation
+
+- Immutable release artifacts are enforced end to end
+- Release evidence is generated as a first-class artifact bundle
+- Monitoring dashboards are committed and referenced by operations
+- Hosted rotation and drill procedures are published for cutover handoff
+
 ## Build order
 
 1. Foundation and naming
@@ -171,3 +179,4 @@ Build a new company-of-agents platform under the Escalona Labs brand with a dete
 10. GitHub runtime integration
 11. Operator control plane
 12. Customer and production readiness
+13. Launch evidence and activation pack

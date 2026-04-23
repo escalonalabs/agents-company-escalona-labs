@@ -23,6 +23,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm ops:validate:m15
+pnpm release:evidence -- --version v0.1.0 --release-branch release/v0.1.0
 ```
 
 Confirm the following operational assets are healthy:

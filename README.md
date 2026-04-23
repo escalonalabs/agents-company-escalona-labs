@@ -113,6 +113,16 @@ availability:
 - [docs/operations/release-train.md](docs/operations/release-train.md)
 - [docs/operations/support-and-oncall.md](docs/operations/support-and-oncall.md)
 
+## M18 Launch Evidence
+
+The repository now includes the final evidence and activation pack used to ship
+the first production candidate without relying on chat memory:
+
+- [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md)
+- [docs/operations/hosted-rotation-and-drills.md](docs/operations/hosted-rotation-and-drills.md)
+- [docs/operations/monitoring-dashboards.md](docs/operations/monitoring-dashboards.md)
+- [ops/monitoring/grafana/agents-company-overview.json](ops/monitoring/grafana/agents-company-overview.json)
+
 ## Validation
 
 Run the repository guardrails locally:
@@ -120,8 +130,9 @@ Run the repository guardrails locally:
 ```bash
 pnpm check:repo
 pnpm check:replay
-pnpm ci
+pnpm run ci
 pnpm ops:validate:m15
+pnpm release:evidence -- --version v0.1.0 --release-branch release/v0.1.0
 ```
 
 ## Security

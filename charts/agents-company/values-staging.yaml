@@ -28,7 +28,7 @@ controlPlane:
   replicaCount: 2
   image:
     repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-staging/control-plane
-    tag: staging
+    tag: v0.1.0
   serviceAccount:
     create: true
     name: agents-company-control-plane
@@ -74,7 +74,7 @@ githubApp:
   replicaCount: 2
   image:
     repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-staging/github-app
-    tag: staging
+    tag: v0.1.0
   serviceAccount:
     create: true
     name: agents-company-github-app
@@ -113,7 +113,7 @@ controlWeb:
   replicaCount: 2
   image:
     repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/agents-company-staging/control-web
-    tag: staging
+    tag: v0.1.0
   autoscaling:
     enabled: true
     minReplicas: 2

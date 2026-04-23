@@ -116,3 +116,7 @@
 ## M17 General Availability
 
 - `AC-1701` Deliver M17 General Availability
+
+## M18 Launch Evidence and Activation
+
+- `AC-1801` Deliver M18 Launch Evidence and Activation

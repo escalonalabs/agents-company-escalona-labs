@@ -39,6 +39,10 @@
     {
       "title": "M17 General Availability",
       "description": "Definition of Done: hosted and self-hosted releases are customer-ready, supportable, and protected by final release discipline."
+    },
+    {
+      "title": "M18 Launch Evidence and Activation",
+      "description": "Definition of Done: immutable release artifacts, release evidence, monitoring dashboards, and hosted cutover procedures are published for the first production candidate."
     }
   ],
   "issues": [
@@ -341,6 +345,21 @@
       ],
       "depends_on": ["AC-1601"],
       "body": "Outcome:\\nClose the final production readiness gap, restore hard GitHub protections, publish hosted and self-hosted docs, and open general availability.\\n\\nValidation:\\nThe product is supportable, protected, and customer-ready for GA."
+    },
+    {
+      "key": "AC-1801",
+      "title": "Deliver M18 Launch Evidence and Activation",
+      "milestone": "M18 Launch Evidence and Activation",
+      "labels": [
+        "type:epic",
+        "area:release",
+        "P0",
+        "size:L",
+        "state:ready",
+        "track:mvp"
+      ],
+      "depends_on": ["AC-1701"],
+      "body": "Outcome:\\nPublish immutable release artifacts, evidence bundles, dashboard assets, and hosted rotation or drill procedures so the first production candidate is auditable and handoff-safe.\\n\\nValidation:\\nA tagged release candidate can generate a release evidence bundle, the dashboard pack exists in-repo, image tags are immutable, and hosted cutover procedures are explicit."
     }
   ]
 }
