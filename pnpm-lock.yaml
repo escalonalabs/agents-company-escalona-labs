@@ -145,8 +145,8 @@ importers:
         specifier: ^5.6.1
         version: 5.8.5
       nodemailer:
-        specifier: ^8.0.5
-        version: 8.0.5
+        specifier: ^8.0.7
+        version: 8.0.7
       pg:
         specifier: ^8.16.3
         version: 8.20.0
@@ -1020,8 +1020,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nodemailer@8.0.5:
-    resolution: {integrity: sha512-0PF8Yb1yZuQfQbq+5/pZJrtF6WQcjTd5/S4JOHs9PGFxuTqoB/icwuB44pOdURHJbRKX1PPoJZtY7R4VUoCC8w==}
+  nodemailer@8.0.7:
+    resolution: {integrity: sha512-pkjE4mkBzQjdJT4/UmlKl3pX0rC9fZmjh7c6C9o7lv66Ac6w9WCnzPzhbPNxwZAzlF4mdq4CSWB5+FbK6FWCow==}
     engines: {node: '>=6.0.0'}
 
   object-assign@4.1.1:
@@ -2113,7 +2113,7 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  nodemailer@8.0.5: {}
+  nodemailer@8.0.7: {}
 
   object-assign@4.1.1: {}
 
