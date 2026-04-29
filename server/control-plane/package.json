@@ -11,7 +11,7 @@
     "@escalonalabs/memory": "workspace:*",
     "@escalonalabs/orchestration": "workspace:*",
     "fastify": "^5.6.1",
-    "nodemailer": "^8.0.5",
+    "nodemailer": "^8.0.7",
     "pg": "^8.16.3"
   },
   "scripts": {
